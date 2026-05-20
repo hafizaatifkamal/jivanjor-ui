@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { getUserEmail, isAuthenticated, signOut } from "../../lib/auth";
+import { getUserEmail, isAuthenticated, signOut } from "@/lib/auth";
 
 export default function AdminLayout({
   children,
@@ -34,8 +34,8 @@ export default function AdminLayout({
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
-        <div className="rounded-3xl border border-white/10 bg-zinc-900/95 px-8 py-5 text-sm text-zinc-300">
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="rounded-3xl border border-surface/80 bg-background px-8 py-5 text-sm text-foreground">
           Preparing the admin experience…
         </div>
       </div>
@@ -53,17 +53,21 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <header className="border-b border-white/10 bg-zinc-900/95 px-6 py-5 backdrop-blur-xl">
+    <div className="min-h-screen bg-surface">
+      <header className="px-6 py-5 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-sky-400">Jivanjor Admin</p>
-            <p className="mt-1 text-sm text-zinc-400">Signed in as {email || "Admin"}</p>
+            <p className="text-sm uppercase tracking-[0.35em] text-sky-400">
+              Jivanjor Admin
+            </p>
+            <p className="mt-1 text-sm text-foreground/70">
+              Signed in as {email || "Admin"}
+            </p>
           </div>
           <button
             type="button"
             onClick={handleSignOut}
-            className="rounded-full border border-slate-700 bg-slate-950/90 px-5 py-3 text-sm font-semibold text-white transition hover:border-slate-500 hover:bg-slate-900"
+            className="rounded-full border border-surface/80 bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-surface"
           >
             Sign out
           </button>
@@ -71,10 +75,12 @@ export default function AdminLayout({
       </header>
 
       <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-6xl flex-col gap-6 px-6 py-8 lg:flex-row">
-        <aside className="space-y-6 rounded-3xl border border-white/10 bg-zinc-900/90 p-6 shadow-xl shadow-black/20 lg:w-72">
+        <aside className="space-y-6 rounded-3xl border border-surface/80 bg-background p-6 shadow-xl shadow-black/5 lg:w-72">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.35em] text-sky-400">Navigation</p>
-            <p className="text-sm text-zinc-400">Your admin tools and pages.</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-sky-400">
+              Navigation
+            </p>
+            <p className="text-sm text-foreground/70">Your admin tools and pages.</p>
           </div>
           <nav className="space-y-2">
             {navItems.map((item) => {
@@ -86,7 +92,7 @@ export default function AdminLayout({
                   className={`block rounded-3xl px-4 py-3 text-sm font-medium transition ${
                     isActive
                       ? "bg-sky-500/15 text-sky-300"
-                      : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                      : "text-foreground/70 hover:bg-surface hover:text-foreground"
                   }`}
                 >
                   {item.label}
@@ -96,7 +102,7 @@ export default function AdminLayout({
           </nav>
         </aside>
 
-        <main className="flex-1 rounded-3xl border border-white/10 bg-zinc-900/90 p-6 shadow-xl shadow-black/20">
+        <main className="flex-1 rounded-3xl border border-surface/80 bg-background p-6 shadow-xl shadow-black/5">
           {children}
         </main>
       </div>

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Google_Sans, Amethysta } from "next/font/google";
 import "./globals.css";
+
+import { Footer, Navbar } from "@/components/layouts";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,9 +14,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const googleSans = Google_Sans({
+  variable: "--font-google-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const amethysta = Amethysta({
+  variable: "--font-amethysta",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export const metadata: Metadata = {
-  title: "Jivanjor CMS",
-  description: "Dashboard | Jivanjor CMS",
+  title: "Jivanjor",
+  description: "Jivanjor",
 };
 
 export default function RootLayout({
@@ -25,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${amethysta.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }
