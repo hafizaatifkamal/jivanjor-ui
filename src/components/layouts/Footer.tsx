@@ -1,19 +1,5 @@
-// import React from 'react'
-
-// export default function Footer() {
-//   return (
-//     <footer>
-//       <div className="">
-
-//       </div>
-//     </footer>
-//   )
-// }
-
-// components/layout/Footer.tsx
-
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 
 const footerSections = [
   {

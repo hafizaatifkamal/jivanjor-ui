@@ -17,30 +17,26 @@ export default function Hero() {
       </div>
 
       <div className="relative mx-auto flex min-h-[calc(100vh-96px)] max-w-7xl items-center px-6 py-20 lg:px-8">
-        <div className="grid w-full gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div className="max-w-md space-y-8">
-            <div className="space-y-6">
-              <h1 className="text-4xl font-amethysta tracking-tight text-white sm:text-5xl">
-                Dependable Bonds for Indian Homes
-              </h1>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <a
-                href="#product-section"
-                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-black/20 transition hover:bg-white/90"
-              >
-                Explore Products
-              </a>
-              <a
-                href="#about-section"
-                className="rounded-full border border-white/30 px-6 py-3 text-sm text-white transition hover:border-white hover:bg-white/5"
-              >
-                About Jivanjor
-              </a>
-            </div>
+        <div className="max-w-md space-y-8 pt-80">
+          <h1 className="text-4xl font-amethysta tracking-[0%] text-white sm:text-5xl">
+            Dependable Bonds for Indian Homes
+          </h1>
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="#product-section"
+              className="min-w-36 rounded-full bg-white px-6 py-2 text-sm font-medium text-black shadow-lg shadow-black/20 transition hover:bg-white/90"
+            >
+              Explore Products
+            </a>
+            <a
+              href="#about-section"
+              className="min-w-36 rounded-full border border-white/30 px-6 py-2 text-sm font-medium text-white transition hover:border-white hover:bg-white/5"
+            >
+              About Jivanjor
+            </a>
           </div>
 
-          <div className="relative flex items-center justify-center">
+          {/* <div className="relative flex items-center justify-center">
             <div className="aspect-video w-full max-w-2xl overflow-hidden rounded-4xl border border-white/10 bg-slate-950/70 shadow-2xl shadow-black/50">
               <div className="relative h-full w-full">
                 <Image
@@ -58,7 +54,7 @@ export default function Hero() {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>
