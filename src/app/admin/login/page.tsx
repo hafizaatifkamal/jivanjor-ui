@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated, signIn } from "../../../lib/auth";
+import { FormEvent, useEffect, useState } from "react";
+import { isAuthenticated, signIn } from "@/lib/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -42,19 +42,25 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4 py-10 text-white">
-      <div className="w-full max-w-md rounded-[32px] border border-white/10 bg-zinc-900/95 p-10 shadow-2xl shadow-black/20">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 bg-background text-foreground">
+      <div className="w-full max-w-md rounded-4xl border border-surface bg-surface p-10 shadow-2xl shadow-black/20">
         <div className="mb-8 text-center">
-          <p className="text-sm uppercase tracking-[0.3em] text-sky-400">Admin login</p>
-          <h1 className="mt-4 text-3xl font-semibold text-white">Sign in to Jivanjor</h1>
-          <p className="mt-2 text-sm text-zinc-400">Use your admin credentials to manage site content.</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-sky-400">
+            Admin login
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold text-foreground">
+            Sign in to Jivanjor
+          </h1>
+          <p className="mt-2 text-sm text-foreground/70">
+            Use your admin credentials to manage site content.
+          </p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-zinc-200">
+          <label className="block text-sm font-medium text-foreground/85">
             Email
             <input
-              className="mt-2 w-full rounded-3xl border border-zinc-700 bg-zinc-950/90 px-4 py-3 text-white outline-none transition focus:border-sky-400"
+              className="mt-2 w-full rounded-3xl border border-surface/70 bg-background px-4 py-3 text-foreground outline-none transition focus:border-sky-400"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -62,10 +68,10 @@ export default function AdminLoginPage() {
             />
           </label>
 
-          <label className="block text-sm font-medium text-zinc-200">
+          <label className="block text-sm font-medium text-foreground/85">
             Password
             <input
-              className="mt-2 w-full rounded-3xl border border-zinc-700 bg-zinc-950/90 px-4 py-3 text-white outline-none transition focus:border-sky-400"
+              className="mt-2 w-full rounded-3xl border border-surface/70 bg-background px-4 py-3 text-foreground outline-none transition focus:border-sky-400"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
