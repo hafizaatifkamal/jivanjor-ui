@@ -113,7 +113,7 @@ export default function Footer() {
             "
           >
             {footerSections.map((section) => (
-              <div key={section.title} className="min-w-[220px]">
+              <div key={section.title} className="min-w-55">
                 <h3 className="font-bold text-2xl mb-5">{section.title}</h3>
 
                 <ul className="space-y-2">
