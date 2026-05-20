@@ -1,5 +1,4 @@
-import Hero from "@/components/home/Hero";
-import ProductRange from "@/components/home/ProductRange";
+import { Hero, ProductRange } from "@/components/home";
 
 export default function Home() {
   return (
