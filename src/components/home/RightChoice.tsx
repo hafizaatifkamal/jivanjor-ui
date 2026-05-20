@@ -35,21 +35,25 @@ export default function RightChoice() {
               key={type.title}
               className="flex flex-col items-center justify-between text-center group cursor-pointer bg-white hover:bg-linear-to-tl from-[#FF0009] to-[#772571] min-w-40 max-w-48 min-h-54 max-h-56 p-5 rounded-2xl"
             >
-              <Image
-                src={type.icon}
-                alt={type.title}
-                className="aspect-square"
-                height={48}
-                width={48}
-              />
-              <p className="font-medium text-base lg:text-lg">{type.title}</p>
-              <PlusCircle
-                size={24}
-                className="text-primary group-hover:hidden"
-              />
-              <button className="cursor-pointer font-medium text-center text-xs rounded-full px-4 py-1 border border-white text-white hidden group-hover:block">
-                Learn More
-              </button>
+              <div className="flex flex-col items-center space-y-2">
+                <Image
+                  src={type.icon}
+                  alt={type.title}
+                  className="aspect-square"
+                  height={48}
+                  width={48}
+                />
+                <p className="font-medium text-base lg:text-lg">{type.title}</p>
+              </div>
+              <div className="">
+                <PlusCircle
+                  size={24}
+                  className="text-primary group-hover:hidden"
+                />
+                <button className="cursor-pointer font-medium text-center text-xs rounded-full px-4 py-1 border-2 border-white text-white hidden group-hover:block">
+                  Learn More
+                </button>
+              </div>
             </div>
           ))}
         </div>

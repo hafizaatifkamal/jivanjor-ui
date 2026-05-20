@@ -1,4 +1,9 @@
-import { Hero, ProductRange, RightChoice } from "@/components/home";
+import {
+  Hero,
+  ProductRange,
+  Professional,
+  RightChoice,
+} from "@/components/home";
 
 export default function Home() {
   return (
@@ -6,6 +11,7 @@ export default function Home() {
       <Hero />
       <ProductRange />
       <RightChoice />
+      <Professional />
     </div>
   );
 }
