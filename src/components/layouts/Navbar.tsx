@@ -18,7 +18,7 @@ export default function Navbar() {
           height={72}
         />
       </div>
-      <div className="hidden md:flex items-center justify-center text-lg font-medium gap-4">
+      <div className="hidden xl:flex items-center justify-center text-lg font-medium gap-4">
         <Link href="#">About</Link>
         <Link href="#">Products</Link>
         <Link href="#">Applications</Link>
@@ -29,7 +29,7 @@ export default function Navbar() {
 
       <button
         onClick={toggleMenu}
-        className="md:hidden mr-2 relative transition-colors z-100"
+        className="xl:hidden mr-2 relative transition-colors z-100"
         aria-label="Toggle menu"
       >
         <div className="flex flex-col items-end justify-between w-6 h-4.5">
