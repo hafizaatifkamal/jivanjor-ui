@@ -28,6 +28,7 @@ export default function Professional() {
           alt="Professional using Jivanjor adhesive"
           width={1200}
           height={800}
+          priority
           className="hidden lg:block w-full h-auto object-cover rounded-2xl"
         />
         <Image
@@ -35,6 +36,7 @@ export default function Professional() {
           alt="Professional using Jivanjor adhesive"
           width={1200}
           height={800}
+          priority
           className="block lg:hidden w-full h-auto object-cover rounded-2xl"
         />
       </div>

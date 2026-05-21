@@ -1,4 +1,5 @@
 import {
+  Ecosystem,
   Hero,
   ProductRange,
   Professional,
@@ -12,6 +13,7 @@ export default function Home() {
       <ProductRange />
       <RightChoice />
       <Professional />
+      <Ecosystem />
     </div>
   );
 }

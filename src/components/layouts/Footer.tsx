@@ -45,7 +45,7 @@ export default function Footer() {
       <div className="absolute bottom-0 right-0 opacity-50 pointer-events-none">
         <Image
           src="/images/watermark.png"
-          alt=""
+          alt="watermark"
           width={900}
           height={450}
           className="w-55 sm:w-95 lg:w-200"
