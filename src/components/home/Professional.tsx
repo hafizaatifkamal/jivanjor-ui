@@ -1,5 +1,4 @@
 import Image from "next/image";
-import React from "react";
 
 const features = [
   { icon: "/images/Asterisk.png", title: "Consistent Quality" },

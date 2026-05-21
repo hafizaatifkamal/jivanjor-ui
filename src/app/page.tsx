@@ -1,9 +1,11 @@
 import {
   Ecosystem,
   Hero,
+  KnowledgeHub,
   ProductRange,
   Professional,
   RightChoice,
+  Testimonial,
 } from "@/components/home";
 
 export default function Home() {
@@ -14,6 +16,8 @@ export default function Home() {
       <RightChoice />
       <Professional />
       <Ecosystem />
+      <Testimonial />
+      <KnowledgeHub />
     </div>
   );
 }

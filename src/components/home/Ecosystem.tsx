@@ -1,9 +1,8 @@
 import Image from "next/image";
-import React from "react";
 
 export default function Ecosystem() {
   return (
-    <section className="relative bg-surface py-20">
+    <section className="relative bg-surface pt-20">
       <div className="mx-auto max-w-7xl justify-center text-center px-6">
         <div className="mx-auto max-w-4xl space-y-6 text-center w-full">
           <h2 className="font-amethysta text-4xl md:text-5xl lg:text-6xl">
@@ -28,15 +27,15 @@ export default function Ecosystem() {
           />
         </div>
         <div className="mx-auto max-w-7xl justify-center space-y-6 ">
-          <h2 className="font-amethysta text-4xl md:text-5xl">
+          <h2 className="font-amethysta text-4xl md:text-[42px]">
             Grow Your Business With a Trusted Adhesive
           </h2>
-          <div className="flex flex-col justify-between lg:flex-row gap-4">
+          <div className="flex flex-col items-start justify-between lg:flex-row gap-4">
             <p className="text-2xl max-w-xl">
               Work with a growing brand trusted by woodworking professionals,
               dealers and channel partners.
             </p>
-            <button className="cursor-pointer font-medium text-center text-lg rounded-full min-w-48 px-4 py-2 border border-spacing-1.5 border-white">
+            <button className="cursor-pointer font-medium text-base rounded-full min-w-50 px-2 py-1 border border-spacing-1.5 border-white">
               Partner With Us
             </button>
           </div>

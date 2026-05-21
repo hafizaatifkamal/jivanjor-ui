@@ -4,6 +4,8 @@ import ProductCarousel from "./ProductCarousel";
 import RightChoice from "./RightChoice";
 import Professional from "./Professional";
 import Ecosystem from "./Ecosystem";
+import Testimonial from "./Testimonial";
+import KnowledgeHub from "./KnowledgeHub";
 
 export {
   Hero,
@@ -12,4 +14,6 @@ export {
   RightChoice,
   Professional,
   Ecosystem,
+  Testimonial,
+  KnowledgeHub,
 };
