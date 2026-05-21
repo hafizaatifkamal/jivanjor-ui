@@ -24,7 +24,13 @@ export default function ProductRange() {
         />
       </div>
       <div className="flex flex-col items-center justify-center text-center relative mx-auto my-20 max-w-6xl px-6 lg:px-8 w-full">
-        <Image src="/images/badge.png" width={40} height={40} alt="badge" />
+        <Image
+          className="mb-4"
+          src="/images/badge.png"
+          width={40}
+          height={40}
+          alt="badge"
+        />
         <div className="max-w-5xl my-4 pb-12">
           <h2 className="font-amethysta font-normal text-5xl lg:text-6xl xl:text-7xl">
             A Complete Adhesive Range for Modern Woodworking
@@ -33,7 +39,7 @@ export default function ProductRange() {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`${tab === activeTab ? " bg-linear-to-tr from-[#FF0009] to-[#772571] text-white" : "bg-surface"} font-medium px-4 py-2 rounded-3xl text-sm`}
+                className={`${tab === activeTab ? "bg-linear-to-tr from-[#FF0009] to-[#772571] text-white" : "bg-surface"} font-medium px-4 py-2 rounded-3xl text-sm`}
               >
                 {tab}
               </button>
