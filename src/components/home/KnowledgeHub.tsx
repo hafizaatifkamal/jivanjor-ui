@@ -24,7 +24,10 @@ export default function KnowledgeHub() {
         </h2>
         <div className="flex flex-col gap-6 py-12">
           {cards.map((c) => (
-            <div className="bg-surface overflow-hidden rounded-3xl">
+            <div
+              key={c.title}
+              className="bg-surface overflow-hidden rounded-3xl"
+            >
               <div className="flex flex-col md:flex-row">
                 <div className="flex flex-col items-start w-full md:w-1/2 p-10 space-y-4">
                   <h3 className="font-semibold text-4xl md:text-5xl">

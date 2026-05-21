@@ -23,7 +23,7 @@ export default function Professional() {
       </div>
       <div className="-mt-6">
         <Image
-          src="/images/professional.png"
+          src="/images/Professional.png"
           alt="Professional using Jivanjor adhesive"
           width={1200}
           height={800}
@@ -31,7 +31,7 @@ export default function Professional() {
           className="hidden lg:block w-full h-auto object-cover rounded-2xl"
         />
         <Image
-          src="/images/professional-mobile.png"
+          src="/images/Professional-mobile.png"
           alt="Professional using Jivanjor adhesive"
           width={1200}
           height={800}
