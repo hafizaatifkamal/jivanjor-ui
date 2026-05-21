@@ -6,6 +6,7 @@ import Professional from "./Professional";
 import Ecosystem from "./Ecosystem";
 import Testimonial from "./Testimonial";
 import KnowledgeHub from "./KnowledgeHub";
+import Gallery from "./Gallery";
 
 export {
   Hero,
@@ -13,6 +14,7 @@ export {
   ProductCarousel,
   RightChoice,
   Professional,
+  Gallery,
   Ecosystem,
   Testimonial,
   KnowledgeHub,

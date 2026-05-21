@@ -1,9 +1,10 @@
 import Image from "next/image";
+import Gallery from "./Gallery";
 
 export default function Ecosystem() {
   return (
     <section className="relative bg-surface pt-20">
-      <div className="mx-auto max-w-7xl justify-center text-center px-6">
+      <div className="mx-auto max-w-7xl justify-center px-6">
         <div className="mx-auto max-w-4xl space-y-6 text-center w-full">
           <h2 className="font-amethysta text-4xl md:text-5xl lg:text-6xl">
             Built Around India’s Woodworking Professionals
@@ -14,6 +15,7 @@ export default function Ecosystem() {
             ecosystem. 
           </p>
         </div>
+        <Gallery />
       </div>
       <div className="relative p-10 my-10 bg-linear-to-r from-[#FF0009] to-[#772571] text-white">
         {/* watermark */}
