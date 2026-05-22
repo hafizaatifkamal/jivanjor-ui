@@ -30,7 +30,7 @@ export default function Hero() {
             </a>
             <a
               href="#about-section"
-              className="min-w-36 rounded-full border border-white/30 px-6 py-2 text-sm font-medium text-white transition hover:border-white hover:bg-white/5"
+              className="min-w-36 rounded-full border-2 border-white/30 px-6 py-2 text-sm font-medium text-white transition hover:border-white hover:bg-white/5"
             >
               About Jivanjor
             </a>

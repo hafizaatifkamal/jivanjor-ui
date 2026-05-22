@@ -39,7 +39,7 @@ export default function RightChoice() {
                 <Image
                   src={type.icon}
                   alt={type.title}
-                  className="aspect-square"
+                  className="aspect-square group-hover:bg-transparent!"
                   height={48}
                   width={48}
                 />

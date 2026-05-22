@@ -31,7 +31,7 @@ export default function ProductRange() {
           height={40}
           alt="badge"
         />
-        <div className="max-w-5xl my-4 pb-12">
+        <div className="max-w-5xl my-6">
           <h2 className="font-amethysta font-normal text-5xl lg:text-6xl xl:text-7xl">
             A Complete Adhesive Range for Modern Woodworking
           </h2>
