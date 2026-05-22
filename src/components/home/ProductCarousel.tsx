@@ -1,5 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/navigation";
 
 const productCards = [
   {
@@ -38,40 +46,70 @@ const productCards = [
 
 export default function ProductCarousel() {
   return (
-    <>
-      <div className="flex items-center justify-center gap-10 pt-40">
+    <section className="w-full">
+      <Swiper
+        modules={[Navigation]}
+        watchOverflow={false}
+        loop={false}
+        spaceBetween={30}
+        slidesPerView={1.5}
+        navigation={{
+          prevEl: ".product-prev",
+          nextEl: ".product-next",
+          disabledClass: "swiper-button-disabled",
+        }}
+        breakpoints={{
+          640: {
+            slidesPerView: 1,
+          },
+          768: {
+            slidesPerView: 2,
+          },
+          1024: {
+            slidesPerView: 3,
+          },
+          1280: {
+            slidesPerView: 4,
+          },
+        }}
+        className="overflow-visible!"
+      >
         {productCards.map((card) => (
-          <div key={card.title} className="relative">
-            <Image
-              src={card.image}
-              alt={card.title}
-              width={800}
-              height={600}
-              className="absolute top-0 -translate-y-1/2 max-w-xs h-auto object-contain z-100"
-            />
-            <div
-              className={`${card.color} relative flex flex-col items-center justify-end min-w-xs max-w-sm h-100 p-8 rounded-2xl w-full text-white shadow-2xl`}
-            >
-              <h3 className="text-2xl font-semibold text-center">
-                {card.title}
-              </h3>
-              <div className="w-full h-px bg-white my-4" />
-              <p className="text-center text-base leading-relaxed max-w-50">
-                {card.description}
-              </p>
+          <SwiperSlide key={card.title} className="overflow-visible! xl w-68!">
+            <div className="relative pt-24">
+              {/* Floating image */}
+              <Image
+                src={card.image}
+                alt={card.title}
+                width={300}
+                height={300}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-60 h-60 object-contain z-100"
+              />
+              {/* Card */}
+              <div
+                className={`${card.color} rounded-[28px] p-6 flex flex-col justify-end items-center text-white shadow-xl min-h-90 min-w-64`}
+              >
+                <h3 className="text-2xl font-semibold text-center">
+                  {card.title}
+                </h3>
+                <div className="w-full h-px bg-white my-4" />
+                <p className="text-center text-base leading-relaxed max-w-60">
+                  {card.description}
+                </p>
+              </div>
             </div>
-          </div>
+          </SwiperSlide>
         ))}
+      </Swiper>
+      {/* Navigation */}
+      <div className="flex items-center justify-center gap-4 mt-12">
+        <button className="cursor-pointer product-prev w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+          <ArrowLeft size={20} />
+        </button>
+        <button className="cursor-pointer product-next w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+          <ArrowRight size={20} />
+        </button>
       </div>
-      {/* Arrows */}
-      <div className="flex items-center gap-4 mt-10">
-        <span className="border-2 border-primary w-10 h-10 rounded-full p-2">
-          <ArrowLeft size={20} className="text-primary" />
-        </span>
-        <span className="border-2 border-primary w-10 h-10 rounded-full p-2">
-          <ArrowRight size={20} className="text-primary" />
-        </span>
-      </div>
-    </>
+    </section>
   );
 }
