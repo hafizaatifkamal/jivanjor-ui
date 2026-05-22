@@ -65,7 +65,8 @@ export default function Gallery() {
           />
         </div>
       </div>
-      <div className="grid grid-flow-col grid-rows-4 grid-cols-2 gap-4">
+      {/* Mobile view */}
+      <div className="grid lg:hidden grid-flow-col grid-rows-4 grid-cols-2 gap-4">
         <div className="rounded-2xl">
           <Image
             src="/images/Rectangle 30.png"
