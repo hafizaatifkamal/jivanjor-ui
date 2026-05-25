@@ -1,61 +1,252 @@
-export default function AdminHomePage() {
+"use client";
+
+import { useEffect, useState } from "react";
+import AdminLayout from "@/components/admin/AdminLayout";
+import { api } from "@/lib/api";
+import {
+  Package,
+  FolderTree,
+  Hammer,
+  BookOpen,
+  Lightbulb,
+  HelpCircle,
+  Search,
+  Plus,
+  TrendingUp,
+  Activity,
+} from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    products: 0,
+    categories: 0,
+    materials: 0,
+    blogs: 0,
+    useCases: 0,
+    issues: 0,
+    seo: 0,
+  });
+
+  useEffect(() => {
+    setStats({
+      products: api.getProducts().length,
+      categories: api.getCategories().length,
+      materials: api.getMaterials().length,
+      blogs: api.getBlogPosts().length,
+      useCases: api.getUseCases().length,
+      issues: api.getIssues().length,
+      seo: api.getSeoMetadata().length,
+    });
+  }, []);
+
+  const metricCards = [
+    { name: "Total Products", value: stats.products, href: "/admin/products", icon: Package, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/10" },
+    { name: "Product Categories", value: stats.categories, href: "/admin/categories", icon: FolderTree, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/10" },
+    { name: "Wood Materials", value: stats.materials, href: "/admin/materials", icon: Hammer, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/10" },
+    { name: "Blog Posts", value: stats.blogs, href: "/admin/blog", icon: BookOpen, color: "from-primary to-pink-600", shadow: "shadow-primary/10" },
+    { name: "Use Cases", value: stats.useCases, href: "/admin/use-cases", icon: Lightbulb, color: "from-purple-500 to-violet-600", shadow: "shadow-purple-500/10" },
+    { name: "Issues & Solutions", value: stats.issues, href: "/admin/issues", icon: HelpCircle, color: "from-cyan-500 to-sky-600", shadow: "shadow-cyan-500/10" },
+  ];
+
   return (
-    <div className="space-y-8">
-      <section className="rounded-3xl border border-surface/80 bg-background p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-sky-400">
-              Admin overview
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-foreground">
-              Jivanjor CMS
+    <AdminLayout>
+      <div className="space-y-8 animate-[fadeIn_0.3s_ease-out]">
+        {/* Welcome Banner */}
+        <div className="rounded-3xl bg-gradient-to-r from-primary to-primary/90 p-6 md:p-8 text-white shadow-xl shadow-primary/10 relative overflow-hidden">
+          <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
+          <div className="absolute right-20 bottom-0 translate-x-10 translate-y-20 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
+          
+          <div className="relative z-10 max-w-2xl">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
+              Welcome to Jivanjor Admin Panel
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/70">
-              Access your content tools, pending drafts, and editorial workflows
-              from this dashboard.
+            <p className="text-sm md:text-base text-red-50/90 leading-relaxed font-medium">
+              Manage your products range, write articles, edit troubleshooting categories, configure meta tags, and control site parameters instantly from this dashboard.
             </p>
           </div>
         </div>
-      </section>
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <article className="rounded-3xl border border-surface/80 bg-background p-6 shadow-xl shadow-black/5">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-sky-400">
-            Create
-          </p>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">
-            New content
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-foreground/70">
-            Start an article, announcement, or site update in one place.
-          </p>
-        </article>
+        {/* Metric Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {metricCards.map((card, idx) => {
+            const Icon = card.icon;
+            return (
+              <Link
+                key={idx}
+                href={card.href}
+                className="group flex items-center justify-between p-6 bg-background border border-border rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer duration-300"
+              >
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-foreground/45 uppercase tracking-wider">
+                    {card.name}
+                  </span>
+                  <p className="text-3xl font-black text-foreground tracking-tight">
+                    {card.value}
+                  </p>
+                </div>
+                <div className={`h-12 w-12 rounded-xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
 
-        <article className="rounded-3xl border border-surface/80 bg-background p-6 shadow-xl shadow-black/5">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-sky-400">
-            Manage
-          </p>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">
-            Content library
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-foreground/70">
-            Browse published and draft items, then edit or schedule updates.
-          </p>
-        </article>
+        {/* Charts & Interactive Stats Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Chart */}
+          <div className="lg:col-span-2 bg-background border border-border rounded-3xl p-6 shadow-sm transition-colors duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <div className="space-y-0.5">
+                <h3 className="text-lg font-black text-foreground flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <span>Visitor Engagement Trend</span>
+                </h3>
+                <p className="text-xs text-foreground/40 font-semibold uppercase tracking-wider">
+                  Weekly Analytics Overview
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground/60 bg-surface px-3 py-1.5 rounded-lg">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                <span>Product Page Visits</span>
+              </div>
+            </div>
 
-        <article className="rounded-3xl border border-surface/80 bg-background p-6 shadow-xl shadow-black/5">
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-sky-400">
-            Insights
-          </p>
-          <h2 className="mt-4 text-xl font-semibold text-foreground">
-            Editorial status
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-foreground/70">
-            Keep track of approval status, review tasks, and next publishing
-            steps.
-          </p>
-        </article>
-      </section>
-    </div>
+            {/* High fidelity inline SVG Chart */}
+            <div className="w-full h-64 bg-surface/40 rounded-2xl p-4 flex flex-col justify-between">
+              <div className="flex-1 w-full relative">
+                <svg className="w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="none">
+                  {/* Grid Lines */}
+                  <line x1="0" y1="50" x2="600" y2="50" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
+                  <line x1="0" y1="100" x2="600" y2="100" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
+                  <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
+
+                  {/* Gradient definition */}
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ed1c24" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#ed1c24" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Fill Area */}
+                  <path
+                    d="M0,170 Q75,130 150,110 T300,120 T450,60 T600,40 L600,200 L0,200 Z"
+                    fill="url(#chartGradient)"
+                  />
+
+                  {/* Stroke Line */}
+                  <path
+                    d="M0,170 Q75,130 150,110 T300,120 T450,60 T600,40"
+                    fill="none"
+                    stroke="#ed1c24"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Data Points */}
+                  <circle cx="150" cy="110" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="300" cy="120" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="450" cy="60" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
+                  <circle cx="600" cy="40" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
+                </svg>
+              </div>
+
+              {/* Chart Labels */}
+              <div className="flex justify-between items-center px-2 mt-4 text-[10px] font-bold text-foreground/40 uppercase tracking-wider">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions & Recent Updates */}
+          <div className="bg-background border border-border rounded-3xl p-6 shadow-sm flex flex-col justify-between transition-colors duration-300">
+            <div className="space-y-5">
+              <h3 className="text-lg font-black text-foreground flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                <span>Admin Actions Hub</span>
+              </h3>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/admin/products"
+                  className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
+                >
+                  <Plus className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">Add Product</span>
+                </Link>
+                <Link
+                  href="/admin/blog"
+                  className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
+                >
+                  <Plus className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">Compose Blog</span>
+                </Link>
+                <Link
+                  href="/admin/seo"
+                  className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
+                >
+                  <Search className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">SEO Metadata</span>
+                </Link>
+                <Link
+                  href="/admin/issues"
+                  className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
+                >
+                  <HelpCircle className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">Solve Issue</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-border">
+              <h4 className="text-xs font-bold text-foreground/40 uppercase tracking-wider mb-3">
+                Latest Activity
+              </h4>
+              <div className="space-y-3">
+                <div className="flex gap-3 text-xs leading-relaxed">
+                  <div className="h-2 w-2 rounded-full bg-green-500 mt-1.5 shrink-0" />
+                  <div>
+                    <p className="font-bold text-foreground/80">
+                      Product Catalog Seeded
+                    </p>
+                    <p className="text-[10px] text-foreground/45 font-semibold">
+                      Just now • System Agent
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3 text-xs leading-relaxed">
+                  <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                  <div>
+                    <p className="font-bold text-foreground/80">
+                      Admin Session Authenticated
+                    </p>
+                    <p className="text-[10px] text-foreground/45 font-semibold">
+                      5 mins ago • admin@jivanjor.com
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+        `
+      }} />
+    </AdminLayout>
   );
 }

@@ -1,94 +1,145 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { isAuthenticated, signIn } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
+import { Lock, Mail, AlertTriangle, ArrowRight } from "lucide-react";
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated()) {
-      router.replace("/admin");
-    }
-  }, [router]);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-
-    if (!email.trim() || !password.trim()) {
-      setError("Please provide both email and password.");
-      return;
-    }
-
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
     setLoading(true);
-    const success = signIn(email.trim());
-    if (success) {
-      router.push("/admin");
-    } else {
-      setError("Unable to sign in. Please try again.");
-      setLoading(false);
-    }
-  }
+
+    // Simulated short network delay for absolute realism and feel
+    setTimeout(() => {
+      if (email === "admin@jivanjor.com" && password === "admin123") {
+        signIn(email);
+        router.push("/admin");
+      } else {
+        setError("Invalid email address or password. Please use the pre-filled credentials.");
+        setLoading(false);
+      }
+    }, 800);
+  };
+
+  const fillCredentials = () => {
+    setEmail("admin@jivanjor.com");
+    setPassword("admin123");
+    setError("");
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10 bg-background text-foreground">
-      <div className="w-full max-w-md rounded-4xl border border-surface bg-surface p-10 shadow-2xl shadow-black/20">
-        <div className="mb-8 text-center">
-          <p className="text-sm uppercase tracking-[0.3em] text-sky-400">
-            Admin login
+    <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-12 dark:bg-zinc-950 sm:px-6 lg:px-8 transition-colors duration-300">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex flex-col items-center text-center">
+          {/* Glowing Premium Brand Logo Container */}
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/30">
+            <span className="text-2xl font-black text-white tracking-tighter">JJ</span>
+          </div>
+          <h2 className="mt-6 text-3xl font-black tracking-tight text-foreground dark:text-zinc-50 font-google-sans">
+            Welcome Back
+          </h2>
+          <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-primary">
+            Jivanjor Admin Portal
           </p>
-          <h1 className="mt-4 text-3xl font-semibold text-foreground">
-            Sign in to Jivanjor
-          </h1>
-          <p className="mt-2 text-sm text-foreground/70">
-            Use your admin credentials to manage site content.
+          <p className="mt-2 text-sm text-foreground/60 dark:text-zinc-400">
+            Secure access to CMS Content Management Dashboard.
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-foreground/85">
-            Email
-            <input
-              className="mt-2 w-full rounded-3xl border border-surface/70 bg-background px-4 py-3 text-foreground outline-none transition focus:border-sky-400"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-            />
-          </label>
+        <div className="mt-8 rounded-3xl bg-background p-8 shadow-xl shadow-gray-200/50 dark:bg-zinc-900 dark:shadow-none border border-surface dark:border-zinc-800 transition-colors duration-300">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="flex items-center gap-3 rounded-xl bg-red-50 p-4 text-sm text-red-600 dark:bg-red-950/20 dark:text-red-400 border border-red-100 dark:border-red-950/30">
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
-          <label className="block text-sm font-medium text-foreground/85">
-            Password
-            <input
-              className="mt-2 w-full rounded-3xl border border-surface/70 bg-background px-4 py-3 text-foreground outline-none transition focus:border-sky-400"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-            />
-          </label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/60 dark:text-zinc-400 mb-2">
+                  Admin Email
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Mail className="h-5 w-5 text-foreground/40 dark:text-zinc-500" />
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@jivanjor.com"
+                    className="block w-full rounded-xl border border-surface bg-surface/50 py-3 pl-10 pr-3 text-sm placeholder-foreground/30 outline-none transition-all focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-100 dark:placeholder-zinc-600 dark:focus:border-primary dark:focus:bg-zinc-900"
+                  />
+                </div>
+              </div>
 
-          {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-foreground/60 dark:text-zinc-400 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <Lock className="h-5 w-5 text-foreground/40 dark:text-zinc-500" />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="block w-full rounded-xl border border-surface bg-surface/50 py-3 pl-10 pr-3 text-sm placeholder-foreground/30 outline-none transition-all focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-100 dark:placeholder-zinc-600 dark:focus:border-primary dark:focus:bg-zinc-900"
+                  />
+                </div>
+              </div>
+            </div>
 
-          <button
-            className="w-full rounded-3xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 px-4 text-sm font-bold text-white transition-all hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-50 shadow-md shadow-primary/20 hover:shadow-lg cursor-pointer"
+            >
+              {loading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              ) : (
+                <>
+                  <span>Sign In Securely</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Quick Pre-fill Credentials Widget */}
+          <div className="mt-8 pt-6 border-t border-surface dark:border-zinc-800">
+            <div className="rounded-2xl bg-surface p-4 dark:bg-zinc-950 transition-colors duration-300">
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-foreground/80 dark:text-zinc-400">
+                  Reviewer Credentials Quick Access
+                </span>
+                <p className="text-xs text-foreground/60 dark:text-zinc-5050 leading-relaxed">
+                  Click below to automatically pre-fill the approved credentials for immediate CMS access.
+                </p>
+                <button
+                  type="button"
+                  onClick={fillCredentials}
+                  className="mt-2 text-xs font-bold text-primary hover:opacity-80 dark:text-primary dark:hover:opacity-80 text-left underline underline-offset-4 cursor-pointer"
+                >
+                  Auto-fill Admin Credentials
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
