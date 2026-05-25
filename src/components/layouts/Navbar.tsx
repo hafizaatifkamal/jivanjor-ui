@@ -2,13 +2,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import MobileNav from "./MobileNav";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const toggleMenu = () => setOpen(!open);
 
   return (
-    <nav className="flex items-center justify-between max-w-7xl mx-auto w-full py-4 px-6 font-google-sans">
+    <nav className="flex items-center justify-between relative max-w-7xl mx-auto w-full py-4 px-6 font-google-sans">
       <div className="">
         <Image
           src="/images/logo.png"
@@ -50,6 +51,7 @@ export default function Navbar() {
           ></span>
         </div>
       </button>
+      {open ? <MobileNav onClose={() => setOpen(false)} /> : null}
     </nav>
   );
 }
