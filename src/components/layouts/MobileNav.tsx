@@ -1,25 +1,68 @@
 "use client";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
+import { ChevronDown } from "lucide-react";
+
+interface NavItem {
+  label: string;
+  href?: string;
+  children?: NavItem[];
+}
 
 interface MobileNavProps {
   onClose?: () => void;
 }
 
-// Furniture & Woodwork
-// Laminates & Finishing
-// Kitchen & Storage Units
-// Moisture-Prone Woodwork
-// PVC & Edge Finishing
-// Home Repairs & DIY
-// Foam & Acoustic Bonding
-// OEM & Bulk Woodwork
-
 export default function MobileNav({ onClose }: MobileNavProps) {
-  const navLinks = [
-    { label: "About", href: "#", children: { lable: "", href: "" } },
-    { label: "Products", href: "#" },
-    { label: "Applications", href: "#" },
+  const [expandedParent, setExpandedParent] = useState<string | null>(null);
+  const [expandedChild, setExpandedChild] = useState<string | null>(null);
+
+  const navLinks: NavItem[] = [
+    { label: "About", href: "#" },
+    {
+      label: "Products",
+      children: [
+        {
+          label: "Super Premium Adhesive",
+          children: [{ label: "Product 1", href: "#" }],
+        },
+        {
+          label: "Speciality Adhesive",
+          children: [{ label: "Product 1", href: "#" }],
+        },
+        { label: "Regular Adhesive", href: "#" },
+        {
+          label: "Water Based or Grade Adhesive",
+          children: [
+            { label: "Watershed", href: "#" },
+            { label: "Aquaprotekt", href: "#" },
+            { label: "Aquashield", href: "#" },
+          ],
+        },
+        {
+          label: "Wood Ancillaries",
+          children: [{ label: "Product 1", href: "#" }],
+        },
+        { label: "ECO", children: [{ label: "Product 1", href: "#" }] },
+        {
+          label: "Wood Preservatives",
+          children: [{ label: "Product 1", href: "#" }],
+        },
+      ],
+    },
+    {
+      label: "Applications",
+      children: [
+        { label: "Furniture & Woodwork", href: "#" },
+        { label: "Laminates & Finishing", href: "#" },
+        { label: "Kitchen & Storage Units", href: "#" },
+        { label: "Moisture-Prone Woodwork", href: "#" },
+        { label: "PVC & Edge Finishing", href: "#" },
+        { label: "Home Repairs & DIY", href: "#" },
+        { label: "Foam & Acoustic Bonding", href: "#" },
+        { label: "OEM & Bulk Woodwork", href: "#" },
+      ],
+    },
     { label: "Knowledge Hub", href: "#" },
     { label: "Partner", href: "#" },
     { label: "Contact", href: "#" },
@@ -32,20 +75,77 @@ export default function MobileNav({ onClose }: MobileNavProps) {
     };
   }, []);
 
+  const toggleExpandItem = (label: string, level: number) => {
+    if (level === 0) {
+      // Top level - accordion behavior, reset children when switching
+      if (expandedParent === label) {
+        setExpandedParent(null);
+        setExpandedChild(null);
+      } else {
+        setExpandedParent(label);
+        setExpandedChild(null);
+      }
+    } else {
+      // Child level - accordion within children
+      setExpandedChild(expandedChild === label ? null : label);
+    }
+  };
+
+  const renderNavItem = (item: NavItem, level: number = 0): JSX.Element => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded =
+      level === 0
+        ? expandedParent === item.label
+        : expandedChild === item.label;
+    const paddingLeft = level * 16;
+
+    return (
+      <div key={item.label}>
+        <div className="flex items-center justify-between">
+          {item.href && !hasChildren ? (
+            <Link
+              href={item.href}
+              className="flex-1 py-3 text-base font-medium hover:text-primary transition-colors duration-200"
+              onClick={onClose}
+              style={{ paddingLeft: `${paddingLeft}px` }}
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <button
+              onClick={() => toggleExpandItem(item.label, level)}
+              className="w-full text-left py-3 font-medium hover:text-primary transition-colors duration-200"
+              style={{ paddingLeft: `${paddingLeft}px` }}
+            >
+              {item.label}
+            </button>
+          )}
+          {hasChildren && (
+            <button
+              onClick={() => toggleExpandItem(item.label, level)}
+              className="p-2 hover:bg-gray-100 rounded transition-colors"
+            >
+              <ChevronDown
+                size={20}
+                className={`transition-transform duration-300 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
+        </div>
+        {hasChildren && isExpanded && (
+          <div className="">
+            {item.children!.map((child) => renderNavItem(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <section className="fixed inset-0 top-20 bg-white z-50 h-screen w-screen overflow-y-auto animate-in fade-in duration-300">
-      <div className="flex flex-col gap-8 pt-12 p-6">
-        {navLinks.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="text-lg font-semibold hover:text-primary transition-colors duration-200"
-            onClick={onClose}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </div>
+      <div className="p-6">{navLinks.map((link) => renderNavItem(link))}</div>
     </section>
   );
 }
