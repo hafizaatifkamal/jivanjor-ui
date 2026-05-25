@@ -18,7 +18,7 @@ const cards = [
 export default function KnowledgeHub() {
   return (
     <section className="relative overflow-hidden">
-      <div className="mx-auto max-w-5xl justify-center px-6">
+      <div className="mx-auto max-w-6xl justify-center px-6">
         <h2 className="font-amethysta font-normal text-center text-4xl md:text-5xl lg:text-6xl">
           Knowledge Base & Guides
         </h2>
@@ -30,7 +30,7 @@ export default function KnowledgeHub() {
             >
               <div className="flex flex-col md:flex-row">
                 <div className="flex flex-col items-start w-full md:w-1/2 p-10 space-y-4">
-                  <h3 className="font-semibold text-4xl md:text-5xl">
+                  <h3 className="font-semibold text-4xl md:text-5xl max-w-96">
                     {c.title}
                   </h3>
                   <button className="cursor-pointer font-medium text-center text-xs rounded-full px-4 py-1 border border-spacing-1.5 border-primary text-primary">
@@ -66,7 +66,7 @@ export default function KnowledgeHub() {
                 </div>
               </div>
               <div className="relative flex flex-col items-start flex-1 min-h-80 px-10 md:py-10 md:px-0 md:pr-10 space-y-4">
-                <p className="text-xl">
+                <p className="text-xl max-w-124">
                   Hear from the carpenters, contractors and dealers who rely on
                   Jivanjor for real projects. Hear from the carpenters,
                   contractors and dealers who rely on Jivanjor for real
