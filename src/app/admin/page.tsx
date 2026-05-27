@@ -47,30 +47,88 @@ export default function DashboardPage() {
   }, []);
 
   const metricCards = [
-    { name: "Total Products", value: stats.products, href: "/admin/products", icon: Package, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/10" },
-    { name: "Product Categories", value: stats.categories, href: "/admin/categories", icon: FolderTree, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/10" },
-    { name: "Wood Materials", value: stats.materials, href: "/admin/materials", icon: Hammer, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/10" },
-    { name: "Blog Posts", value: stats.blogs, href: "/admin/blog", icon: BookOpen, color: "from-primary to-pink-600", shadow: "shadow-primary/10" },
-    { name: "Use Cases", value: stats.useCases, href: "/admin/use-cases", icon: Lightbulb, color: "from-purple-500 to-violet-600", shadow: "shadow-purple-500/10" },
-    { name: "Issues & Solutions", value: stats.issues, href: "/admin/issues", icon: HelpCircle, color: "from-cyan-500 to-sky-600", shadow: "shadow-cyan-500/10" },
-    { name: "Dynamic Pages", value: stats.pages, href: "/admin/pages", icon: FileText, color: "from-rose-500 to-red-600", shadow: "shadow-rose-500/10" },
-    { name: "Page Templates", value: stats.templates, href: "/admin/templates", icon: Layers, color: "from-blue-600 to-cyan-500", shadow: "shadow-blue-600/10" },
+    {
+      name: "Total Products",
+      value: stats.products,
+      href: "/admin/products",
+      icon: Package,
+      color: "from-blue-500 to-indigo-600",
+      shadow: "shadow-blue-500/10",
+    },
+    {
+      name: "Product Categories",
+      value: stats.categories,
+      href: "/admin/categories",
+      icon: FolderTree,
+      color: "from-emerald-500 to-teal-600",
+      shadow: "shadow-emerald-500/10",
+    },
+    {
+      name: "Wood Materials",
+      value: stats.materials,
+      href: "/admin/materials",
+      icon: Hammer,
+      color: "from-amber-500 to-orange-600",
+      shadow: "shadow-amber-500/10",
+    },
+    {
+      name: "Blog Posts",
+      value: stats.blogs,
+      href: "/admin/blog",
+      icon: BookOpen,
+      color: "from-primary to-pink-600",
+      shadow: "shadow-primary/10",
+    },
+    {
+      name: "Use Cases",
+      value: stats.useCases,
+      href: "/admin/use-cases",
+      icon: Lightbulb,
+      color: "from-purple-500 to-violet-600",
+      shadow: "shadow-purple-500/10",
+    },
+    {
+      name: "Issues & Solutions",
+      value: stats.issues,
+      href: "/admin/issues",
+      icon: HelpCircle,
+      color: "from-cyan-500 to-sky-600",
+      shadow: "shadow-cyan-500/10",
+    },
+    {
+      name: "Dynamic Pages",
+      value: stats.pages,
+      href: "/admin/pages",
+      icon: FileText,
+      color: "from-rose-500 to-red-600",
+      shadow: "shadow-rose-500/10",
+    },
+    {
+      name: "Page Templates",
+      value: stats.templates,
+      href: "/admin/templates",
+      icon: Layers,
+      color: "from-blue-600 to-cyan-500",
+      shadow: "shadow-blue-600/10",
+    },
   ];
 
   return (
     <AdminLayout>
       <div className="space-y-8 animate-[fadeIn_0.3s_ease-out]">
         {/* Welcome Banner */}
-        <div className="rounded-3xl bg-gradient-to-r from-primary to-primary/90 p-6 md:p-8 text-white shadow-xl shadow-primary/10 relative overflow-hidden">
+        <div className="rounded-3xl bg-linear-to-r from-primary to-primary/90 p-6 md:p-8 text-white shadow-xl shadow-primary/10 relative overflow-hidden">
           <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-96 h-96 rounded-full bg-white/5 pointer-events-none" />
           <div className="absolute right-20 bottom-0 translate-x-10 translate-y-20 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
-          
+
           <div className="relative z-10 max-w-2xl">
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
               Welcome to Jivanjor Admin Panel
             </h1>
             <p className="text-sm md:text-base text-red-50/90 leading-relaxed font-medium">
-              Manage your products range, write articles, edit troubleshooting categories, configure meta tags, and control site parameters instantly from this dashboard.
+              Manage your products range, write articles, edit troubleshooting
+              categories, configure meta tags, and control site parameters
+              instantly from this dashboard.
             </p>
           </div>
         </div>
@@ -93,7 +151,9 @@ export default function DashboardPage() {
                     {card.value}
                   </p>
                 </div>
-                <div className={`h-12 w-12 rounded-xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                <div
+                  className={`h-12 w-12 rounded-xl bg-linear-to-tr ${card.color} text-white flex items-center justify-center shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}
+                >
                   <Icon className="h-6 w-6" />
                 </div>
               </Link>
@@ -124,17 +184,55 @@ export default function DashboardPage() {
             {/* High fidelity inline SVG Chart */}
             <div className="w-full h-64 bg-surface/40 rounded-2xl p-4 flex flex-col justify-between">
               <div className="flex-1 w-full relative">
-                <svg className="w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="none">
+                <svg
+                  className="w-full h-full"
+                  viewBox="0 0 600 200"
+                  preserveAspectRatio="none"
+                >
                   {/* Grid Lines */}
-                  <line x1="0" y1="50" x2="600" y2="50" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
-                  <line x1="0" y1="100" x2="600" y2="100" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
-                  <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" strokeDasharray="4 4" className="stroke-border" />
+                  <line
+                    x1="0"
+                    y1="50"
+                    x2="600"
+                    y2="50"
+                    stroke="#f1f5f9"
+                    strokeDasharray="4 4"
+                    className="stroke-border"
+                  />
+                  <line
+                    x1="0"
+                    y1="100"
+                    x2="600"
+                    y2="100"
+                    stroke="#f1f5f9"
+                    strokeDasharray="4 4"
+                    className="stroke-border"
+                  />
+                  <line
+                    x1="0"
+                    y1="150"
+                    x2="600"
+                    y2="150"
+                    stroke="#f1f5f9"
+                    strokeDasharray="4 4"
+                    className="stroke-border"
+                  />
 
                   {/* Gradient definition */}
                   <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="chartGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#ed1c24" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#ed1c24" stopOpacity="0.0" />
+                      <stop
+                        offset="100%"
+                        stopColor="#ed1c24"
+                        stopOpacity="0.0"
+                      />
                     </linearGradient>
                   </defs>
 
@@ -154,10 +252,38 @@ export default function DashboardPage() {
                   />
 
                   {/* Data Points */}
-                  <circle cx="150" cy="110" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
-                  <circle cx="300" cy="120" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
-                  <circle cx="450" cy="60" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
-                  <circle cx="600" cy="40" r="5" fill="#ed1c24" stroke="#ffffff" strokeWidth="2" />
+                  <circle
+                    cx="150"
+                    cy="110"
+                    r="5"
+                    fill="#ed1c24"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="300"
+                    cy="120"
+                    r="5"
+                    fill="#ed1c24"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="450"
+                    cy="60"
+                    r="5"
+                    fill="#ed1c24"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="600"
+                    cy="40"
+                    r="5"
+                    fill="#ed1c24"
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                  />
                 </svg>
               </div>
 
@@ -246,15 +372,17 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      
-      <style dangerouslySetInnerHTML={{
-        __html: `
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes fadeIn {
             0% { opacity: 0; transform: translateY(10px); }
             100% { opacity: 1; transform: translateY(0); }
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </AdminLayout>
   );
 }
