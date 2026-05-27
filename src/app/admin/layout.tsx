@@ -20,7 +20,7 @@ export default function AdminRootLayout({
       */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          body:has(#admin-root) nav,
+          body:has(#admin-root) #main-landing-header,
           body:has(#admin-root) footer {
             display: none !important;
           }

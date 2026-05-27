@@ -14,6 +14,8 @@ import {
   Plus,
   TrendingUp,
   Activity,
+  FileText,
+  Layers,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -26,6 +28,8 @@ export default function DashboardPage() {
     useCases: 0,
     issues: 0,
     seo: 0,
+    pages: 0,
+    templates: 0,
   });
 
   useEffect(() => {
@@ -37,6 +41,8 @@ export default function DashboardPage() {
       useCases: api.getUseCases().length,
       issues: api.getIssues().length,
       seo: api.getSeoMetadata().length,
+      pages: api.getPages().length,
+      templates: api.getTemplates().length,
     });
   }, []);
 
@@ -47,6 +53,8 @@ export default function DashboardPage() {
     { name: "Blog Posts", value: stats.blogs, href: "/admin/blog", icon: BookOpen, color: "from-primary to-pink-600", shadow: "shadow-primary/10" },
     { name: "Use Cases", value: stats.useCases, href: "/admin/use-cases", icon: Lightbulb, color: "from-purple-500 to-violet-600", shadow: "shadow-purple-500/10" },
     { name: "Issues & Solutions", value: stats.issues, href: "/admin/issues", icon: HelpCircle, color: "from-cyan-500 to-sky-600", shadow: "shadow-cyan-500/10" },
+    { name: "Dynamic Pages", value: stats.pages, href: "/admin/pages", icon: FileText, color: "from-rose-500 to-red-600", shadow: "shadow-rose-500/10" },
+    { name: "Page Templates", value: stats.templates, href: "/admin/templates", icon: Layers, color: "from-blue-600 to-cyan-500", shadow: "shadow-blue-600/10" },
   ];
 
   return (
@@ -68,7 +76,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {metricCards.map((card, idx) => {
             const Icon = card.icon;
             return (
@@ -190,18 +198,18 @@ export default function DashboardPage() {
                   <span className="text-xs">Compose Blog</span>
                 </Link>
                 <Link
-                  href="/admin/seo"
+                  href="/admin/pages"
                   className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
                 >
-                  <Search className="h-5 w-5 shrink-0" />
-                  <span className="text-xs">SEO Metadata</span>
+                  <Plus className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">Create Page</span>
                 </Link>
                 <Link
-                  href="/admin/issues"
+                  href="/admin/templates"
                   className="flex flex-col gap-2 p-4 rounded-xl bg-surface hover:bg-primary/10 text-foreground/80 hover:text-primary transition-all font-bold cursor-pointer border border-border"
                 >
-                  <HelpCircle className="h-5 w-5 shrink-0" />
-                  <span className="text-xs">Solve Issue</span>
+                  <Plus className="h-5 w-5 shrink-0" />
+                  <span className="text-xs">Build Template</span>
                 </Link>
               </div>
             </div>

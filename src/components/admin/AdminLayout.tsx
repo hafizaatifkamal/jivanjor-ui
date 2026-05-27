@@ -20,6 +20,11 @@ import {
   X,
   Bell,
   ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+  FileText,
+  Layers,
+  UserCheck,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -29,14 +34,16 @@ interface SidebarItem {
 }
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Products", href: "/admin/products", icon: Package },
-  { name: "Categories", href: "/admin/categories", icon: FolderTree },
-  { name: "Materials", href: "/admin/materials", icon: Hammer },
-  { name: "Blog Posts", href: "/admin/blog", icon: BookOpen },
-  { name: "Use Cases", href: "/admin/use-cases", icon: Lightbulb },
-  { name: "Issues & Solutions", href: "/admin/issues", icon: HelpCircle },
-  { name: "SEO Metadata", href: "/admin/seo", icon: Search },
+  { name: "Overview", href: "/admin", icon: LayoutDashboard },
+  { name: "Product Management", href: "/admin/products", icon: Package },
+  { name: "Category Management", href: "/admin/categories", icon: FolderTree },
+  { name: "Material Management", href: "/admin/materials", icon: Hammer },
+  { name: "Blog Management", href: "/admin/blog", icon: BookOpen },
+  { name: "Use Case Management", href: "/admin/use-cases", icon: Lightbulb },
+  { name: "Issue Management", href: "/admin/issues", icon: HelpCircle },
+  { name: "SEO Metadata Management", href: "/admin/seo", icon: Search },
+  { name: "Dynamic Page Management", href: "/admin/pages", icon: FileText },
+  { name: "Page Template Management", href: "/admin/templates", icon: Layers },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -45,10 +52,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [email, setEmail] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    setEmail(getUserEmail());
-    
+    setEmail(getUserEmail() || "admin@jivanjor.com");
+
     // Check local storage for theme
     const theme = localStorage.getItem("jivanjor_admin_theme");
     if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
@@ -58,6 +66,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setDarkMode(false);
       document.documentElement.classList.remove("dark");
     }
+
+    // Check local storage for sidebar collapsed status
+    const collapsed = localStorage.getItem("jivanjor_admin_sidebar_collapsed") === "true";
+    setIsCollapsed(collapsed);
   }, []);
 
   const toggleTheme = () => {
@@ -70,6 +82,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.documentElement.classList.remove("dark");
       localStorage.setItem("jivanjor_admin_theme", "light");
     }
+  };
+
+  const toggleCollapse = () => {
+    const nextState = !isCollapsed;
+    setIsCollapsed(nextState);
+    localStorage.setItem("jivanjor_admin_sidebar_collapsed", String(nextState));
   };
 
   const handleLogout = () => {
@@ -85,72 +103,103 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen w-full bg-surface text-foreground overflow-hidden font-google-sans transition-colors duration-300">
       {/* ==================== DESKTOP SIDEBAR ==================== */}
-      <aside className="hidden lg:flex flex-col w-68 bg-background border-r border-border shrink-0 transition-colors duration-300">
-        {/* Brand Header */}
-        <div className="h-20 flex items-center gap-3 px-6 border-b border-border">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/30">
-            <span className="text-lg font-black text-white tracking-tighter">JJ</span>
+      <aside className={`hidden lg:flex flex-col bg-background border-r border-border shrink-0 transition-all duration-300 ${isCollapsed ? "w-20" : "w-68"
+        }`}>
+        {/* Brand Header: Collapsed shows ONLY the panel open icon */}
+        {isCollapsed ? (
+          <div className="h-20 flex items-center justify-center shrink-0 animate-[fadeIn_0.2s_ease-out]">
+            <button
+              onClick={toggleCollapse}
+              className="p-2.5 rounded-xl bg-surface text-foreground/75 hover:bg-surface/85 border border-border cursor-pointer transition-all hover:scale-105"
+              title="Expand Sidebar"
+            >
+              <PanelLeftOpen className="h-5 w-5 text-primary" />
+            </button>
           </div>
-          <div>
-            <h1 className="text-base font-extrabold tracking-tight text-foreground">
-              Jivanjor
-            </h1>
-            <p className="text-[10px] font-bold tracking-wider text-primary uppercase">
-              CMS ADMIN PANEL
-            </p>
+        ) : (
+          <div className="h-20 flex items-center justify-between px-5 border-b border-border shrink-0">
+            <div className="flex items-center gap-2.5 truncate">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/30 shrink-0">
+                <span className="text-lg font-black text-white tracking-tighter">JJ</span>
+              </div>
+              <div className="truncate">
+                <h1 className="text-sm font-extrabold tracking-tight text-foreground animate-[fadeIn_0.2s_ease-out]">
+                  Jivanjor
+                </h1>
+                <p className="text-[9px] font-bold tracking-wider text-primary uppercase animate-[fadeIn_0.2s_ease-out]">
+                  CMS ADMIN PANEL
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={toggleCollapse}
+              className="p-1.5 rounded-lg bg-surface text-foreground/75 hover:bg-surface/80 border border-border cursor-pointer transition-all hover:scale-105 shrink-0"
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Navigation Links */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-          {SIDEBAR_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group duration-200 ${
-                  isActive
+        {!isCollapsed && (
+          <nav className="flex-1 py-6 space-y-1.5 overflow-y-auto px-4">
+            {SIDEBAR_ITEMS.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center rounded-xl text-sm font-semibold transition-all group duration-200 gap-3 px-4 py-3 ${isActive
                     ? "bg-primary/10 text-primary"
                     : "text-foreground/75 hover:bg-surface hover:text-foreground"
-                }`}
-              >
-                <Icon
-                  className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${
-                    isActive ? "text-primary" : "text-foreground/45"
-                  }`}
-                />
-                <span>{item.name}</span>
-                {isActive && (
-                  <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+                    }`}
+                >
+                  <Icon
+                    className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 shrink-0 ${isActive ? "text-primary" : "text-foreground/45"
+                      }`}
+                  />
+                  <span className="animate-[fadeIn_0.2s_ease-out] truncate">{item.name}</span>
+                  {isActive && (
+                    <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
 
         {/* Footer Info */}
-        <div className="p-4 border-t border-border bg-surface/55">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-9 w-9 rounded-lg bg-surface flex items-center justify-center font-bold text-foreground text-sm border border-border">
+        <div className={`p-4 border-t border-border bg-surface/55 transition-all duration-300 ${isCollapsed ? "flex flex-col items-center gap-3" : ""
+          }`}>
+          {isCollapsed ? (
+            <div className="h-9 w-9 rounded-lg bg-surface flex items-center justify-center font-bold text-foreground text-sm border border-border shrink-0" title={email}>
               {email ? email.substring(0, 2).toUpperCase() : "AD"}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-foreground truncate">
-                Administrator
-              </p>
-              <p className="text-[10px] text-foreground/50 truncate">
-                {email}
-              </p>
+          ) : (
+            <div className="flex items-center gap-3 mb-3 animate-[fadeIn_0.2s_ease-out]">
+              <div className="h-9 w-9 rounded-lg bg-surface flex items-center justify-center font-bold text-foreground text-sm border border-border shrink-0">
+                {email ? email.substring(0, 2).toUpperCase() : "AD"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-foreground truncate">
+                  Administrator
+                </p>
+                <p className="text-[10px] text-foreground/50 truncate">
+                  {email}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           <button
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-primary bg-background border border-border rounded-lg hover:bg-primary/5 transition-all cursor-pointer"
+            className={`flex items-center justify-center text-xs font-bold text-primary bg-background border border-border rounded-lg hover:bg-primary/5 transition-all cursor-pointer ${isCollapsed ? "p-2.5 w-10 h-10 shrink-0" : "gap-2 w-full px-3 py-2"
+              }`}
+            title="Sign Out"
           >
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Sign Out</span>
+            <LogOut className="h-3.5 w-3.5 shrink-0" />
+            {!isCollapsed && <span className="animate-[fadeIn_0.2s_ease-out]">Sign Out</span>}
           </button>
         </div>
       </aside>
@@ -186,11 +235,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground/75 hover:bg-surface"
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-foreground/75 hover:bg-surface"
+                      }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <span>{item.name}</span>
@@ -227,21 +275,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2.5 rounded-xl bg-surface text-foreground/70 hover:bg-surface/85 cursor-pointer"
+              className="lg:hidden p-2.5 rounded-xl bg-surface text-foreground/70 hover:bg-surface/85 cursor-pointer border border-border"
             >
               <Menu className="h-5 w-5" />
             </button>
-            
-            {/* Breadcrumb Header */}
-            <div className="hidden sm:flex items-center gap-2 text-sm font-semibold">
-              <span className="text-foreground/45">Jivanjor</span>
-              <ChevronRight className="h-4 w-4 text-foreground/20" />
-              <span className="text-foreground">{getPageTitle()}</span>
+
+            {/* Clickable Interactive Breadcrumbs - NO back arrow buttons */}
+            <div className="hidden md:flex items-center gap-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Link
+                  href="/admin"
+                  className="text-foreground/45 hover:text-primary transition-colors cursor-pointer"
+                >
+                  Dashboard
+                </Link>
+                {pathname !== "/admin" && (
+                  <>
+                    <ChevronRight className="h-4 w-4 text-foreground/20" />
+                    <span className="text-foreground">{getPageTitle()}</span>
+                  </>
+                )}
+              </div>
             </div>
-            
-            <h2 className="sm:hidden text-lg font-black text-foreground">
-              {getPageTitle()}
-            </h2>
           </div>
 
           <div className="flex items-center gap-3">

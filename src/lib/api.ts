@@ -60,11 +60,40 @@ export interface BlogPost {
 
 export interface SeoMetadata {
   id: string;
-  page_type: string; // 'home', 'product', 'category', 'blog', 'use-case', 'issue'
+  page_type: string; // 'home', 'product', 'category', 'blog', 'use-case', 'issue', 'static'
   page_id: string; // ID of record or 'home'
   meta_title: string;
   meta_description: string;
   canonical_url: string;
+}
+
+// Mapped to jivanjor-server Zod specs
+export interface Page {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+}
+
+export interface PageTemplateSection {
+  id: string;
+  type: "hero" | "features" | "text" | "cta" | "testimonials";
+  title: string;
+  subtitle?: string;
+  content?: string;
+  image?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  order: number;
+}
+
+export interface PageTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  pageId: string;
+  isActive: boolean;
+  sections: PageTemplateSection[];
 }
 
 // Key names for localStorage
@@ -76,6 +105,8 @@ const KEYS = {
   ISSUES: "jivanjor_issues",
   BLOG_POSTS: "jivanjor_blog_posts",
   SEO_METADATA: "jivanjor_seo_metadata",
+  PAGES: "jivanjor_pages",
+  TEMPLATES: "jivanjor_templates",
 };
 
 // Seed Data
@@ -187,6 +218,66 @@ const SEED_SEO: SeoMetadata[] = [
   { id: "seo-1", page_type: "home", page_id: "home", meta_title: "Jivanjor - Premium Adhesives & Wood Finishes", meta_description: "Explore Jivanjor's collection of high-strength synthetic adhesives, waterproof marine glues, and exquisite wood finishes designed for perfectionists.", canonical_url: "https://jivanjor.com" },
   { id: "seo-2", page_type: "product", page_id: "prod-1", meta_title: "Jivanjor WaterShield 2-in-1 - Extreme Water Resistant Glue", meta_description: "Discover WaterShield 2-in-1, Jivanjor's top marine-grade wood adhesive. Perfect for high-moisture kitchen, bathroom, and outdoor structural woodwork.", canonical_url: "https://jivanjor.com/products/jivanjor-watershield-2-in-1" },
   { id: "seo-3", page_type: "blog", page_id: "blog-2", meta_title: "Why Marine Grade Adhesives Matter in Modular Kitchens", meta_description: "Learn how steam and water splash impact standard glues, and why Jivanjor marine waterproof adhesives are essential for beautiful modular setups.", canonical_url: "https://jivanjor.com/blog/why-waterproof-adhesives-non-negotiable" }
+];
+
+const SEED_PAGES: Page[] = [
+  { id: "page-1", title: "Dealer Onboarding Portal", slug: "dealer-onboarding", description: "Bespoke sign-up pathway for hardware shops, adhesive distributors, and carpenters networks." },
+  { id: "page-2", title: "Architect Design consultations", slug: "architect-consultations", description: "Bespoke consultancy portal linking custom furniture architects with Jivanjor polymer R&D labs." }
+];
+
+const SEED_TEMPLATES: PageTemplate[] = [
+  {
+    id: "temp-1",
+    name: "Partner Sign-up Layout",
+    slug: "partner-sign-up-layout",
+    pageId: "page-1",
+    isActive: true,
+    sections: [
+      {
+        id: "sec-1",
+        type: "hero",
+        title: "Become a Registered Jivanjor Adhesives Dealer",
+        subtitle: "Join India's fastest growing network of wood-bonding specialists. High margins, priority supply, and seasonal carpenter rewards.",
+        image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=600&auto=format&fit=crop",
+        ctaText: "Apply Online Now",
+        ctaLink: "#registration-form",
+        order: 1
+      },
+      {
+        id: "sec-2",
+        type: "features",
+        title: "Key Distributor Advantages",
+        content: "• Guaranteed authentic synthetic resins shipped direct from manufacturing facilities.\n• Dedicated regional manager and custom marketing banner displays.\n• Earn Jivanjor loyalty points redeemable for physical gifts and cashback.",
+        order: 2
+      }
+    ]
+  },
+  {
+    id: "temp-2",
+    name: "Architect Consultation Premium Layout",
+    slug: "architect-consultation-premium-layout",
+    pageId: "page-2",
+    isActive: true,
+    sections: [
+      {
+        id: "sec-3",
+        type: "hero",
+        title: "Empowering Modern Wooden Architecture",
+        subtitle: "Tailor-made adhesive specifications matching environmental stresses, wood moisture levels, and structural finishes.",
+        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop",
+        ctaText: "Schedule Call with R&D",
+        ctaLink: "#contact-consultant",
+        order: 1
+      },
+      {
+        id: "sec-4",
+        type: "text",
+        title: "Our Scientific Bonding Assessment Strategy",
+        content: "Wood polymer engineering is vital for premium architectural structures. Jivanjor engineers carry out rigorous tests under moisture cycles, humidity stressors, and temperature ranges to assign structural polymers that guarantee joint durability for decades.",
+        order: 2
+      }
+    ]
+  }
 ];
 
 // Helper to check if browser environment is ready
@@ -436,4 +527,87 @@ export const api = {
     setStorageItem(KEYS.SEO_METADATA, filtered);
     return true;
   },
+
+  // DYNAMIC PAGES (MAPPED TO JIVANJOR-SERVER PAGE SERVICE)
+  getPages: (): Page[] => getStorageItem<Page>(KEYS.PAGES, SEED_PAGES),
+  getPageById: (id: string): Page | undefined => api.getPages().find(p => p.id === id),
+  savePage: (page: Omit<Page, "id"> & { id?: string }): Page => {
+    const pages = api.getPages();
+    let saved: Page;
+    if (page.id) {
+      pages.forEach((p, idx) => {
+        if (p.id === page.id) {
+          pages[idx] = { ...p, ...page } as Page;
+        }
+      });
+      saved = pages.find(p => p.id === page.id)!;
+    } else {
+      saved = {
+        ...page,
+        id: `page-${Date.now()}`,
+      };
+      pages.push(saved);
+    }
+    setStorageItem(KEYS.PAGES, pages);
+    return saved;
+  },
+  deletePage: (id: string): boolean => {
+    const pages = api.getPages();
+    const filtered = pages.filter(p => p.id !== id);
+    if (filtered.length === pages.length) return false;
+    setStorageItem(KEYS.PAGES, filtered);
+    
+    // Cascading delete templates of this page matching server
+    const templates = api.getTemplates();
+    const remainingTemplates = templates.filter(t => t.pageId !== id);
+    setStorageItem(KEYS.TEMPLATES, remainingTemplates);
+    
+    return true;
+  },
+
+  // PAGE TEMPLATES (MAPPED TO JIVANJOR-SERVER TEMPLATE SERVICE)
+  getTemplates: (): PageTemplate[] => getStorageItem<PageTemplate>(KEYS.TEMPLATES, SEED_TEMPLATES),
+  getTemplateById: (id: string): PageTemplate | undefined => api.getTemplates().find(t => t.id === id),
+  saveTemplate: (template: Omit<PageTemplate, "id"> & { id?: string }): PageTemplate => {
+    const templates = api.getTemplates();
+    let saved: PageTemplate;
+    if (template.id) {
+      templates.forEach((t, idx) => {
+        if (t.id === template.id) {
+          templates[idx] = { ...t, ...template } as PageTemplate;
+        }
+      });
+      saved = templates.find(t => t.id === template.id)!;
+    } else {
+      saved = {
+        ...template,
+        id: `temp-${Date.now()}`,
+      };
+      templates.push(saved);
+    }
+    setStorageItem(KEYS.TEMPLATES, templates);
+    return saved;
+  },
+  deleteTemplate: (id: string): boolean => {
+    const templates = api.getTemplates();
+    const filtered = templates.filter(t => t.id !== id);
+    if (filtered.length === templates.length) return false;
+    setStorageItem(KEYS.TEMPLATES, filtered);
+    return true;
+  },
+  activateTemplate: (id: string): PageTemplate | undefined => {
+    const templates = api.getTemplates();
+    const target = templates.find(t => t.id === id);
+    if (!target) return undefined;
+
+    // Set all templates of same page to false, and this one to true (1:1 matching transaction in server)
+    templates.forEach((t, idx) => {
+      if (t.pageId === target.pageId) {
+        templates[idx].isActive = t.id === id;
+      }
+    });
+
+    setStorageItem(KEYS.TEMPLATES, templates);
+    return templates.find(t => t.id === id);
+  }
 };
