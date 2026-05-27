@@ -10,7 +10,7 @@ export default function Hero() {
           src="/images/hero.png"
           alt="Jivanjor hero thumbnail"
           fill
-          className="object-cover"
+          className="object-cover mt-22"
           priority
         />
         <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/30 to-black/90" />

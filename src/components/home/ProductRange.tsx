@@ -1,4 +1,6 @@
+"use client";
 import Image from "next/image";
+import { useState } from "react";
 import ProductCarousel from "./ProductCarousel";
 
 export default function ProductRange() {
@@ -9,7 +11,7 @@ export default function ProductRange() {
     "Waterproof Grade",
     "ECO",
   ];
-  const activeTab = "Super Premium";
+  const [activeTab, setActiveTab] = useState(tabs[0]);
 
   return (
     <section id="product-section" className="relative overflow-hidden">
@@ -39,7 +41,8 @@ export default function ProductRange() {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`${tab === activeTab ? "bg-linear-to-tr from-[#FF0009] to-[#772571] text-white" : "bg-surface"} font-medium px-4 py-2 rounded-3xl text-sm`}
+                onClick={() => setActiveTab(tab)}
+                className={`${tab === activeTab ? "bg-linear-to-tr from-[#FF0009] to-[#772571] text-white" : "bg-surface"} cursor-pointer font-medium px-4 py-2 rounded-3xl text-sm`}
               >
                 {tab}
               </button>
