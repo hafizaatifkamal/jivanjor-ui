@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect, JSX } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Minus, Plus } from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -98,14 +98,17 @@ export default function MobileNav({ onClose }: MobileNavProps) {
         ? expandedParent === item.label
         : expandedChild === item.label;
     const paddingLeft = level * 16;
+    const textClasses =
+      level === 0 ? "text-lg font-semibold" : "text-base font-medium";
+    const verticalPadding = level > 0 ? "py-0.5" : "py-3";
 
     return (
       <div key={item.label}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pr-3">
           {item.href && !hasChildren ? (
             <Link
               href={item.href}
-              className="flex-1 py-3 text-base font-medium hover:text-primary transition-colors duration-200"
+              className={`flex-1 ${verticalPadding} ${textClasses} hover:text-primary transition-colors duration-200`}
               onClick={onClose}
               style={{ paddingLeft: `${paddingLeft}px` }}
             >
@@ -114,7 +117,7 @@ export default function MobileNav({ onClose }: MobileNavProps) {
           ) : (
             <button
               onClick={() => toggleExpandItem(item.label, level)}
-              className="w-full text-left py-3 font-medium hover:text-primary transition-colors duration-200"
+              className={`w-full text-left ${verticalPadding} ${textClasses} hover:text-primary transition-colors duration-200`}
               style={{ paddingLeft: `${paddingLeft}px` }}
             >
               {item.label}
@@ -123,14 +126,22 @@ export default function MobileNav({ onClose }: MobileNavProps) {
           {hasChildren && (
             <button
               onClick={() => toggleExpandItem(item.label, level)}
-              className="p-2 hover:bg-gray-100 rounded transition-colors"
+              className="hover:bg-gray-100 rounded transition-colors"
             >
-              <ChevronDown
-                size={20}
-                className={`transition-transform duration-300 ${
-                  isExpanded ? "rotate-180" : ""
-                }`}
-              />
+              {level > 0 ? (
+                isExpanded ? (
+                  <Minus size={18} className="text-primary" />
+                ) : (
+                  <Plus size={18} className="text-primary" />
+                )
+              ) : (
+                <ChevronDown
+                  size={20}
+                  className={`transition-transform duration-300 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              )}
             </button>
           )}
         </div>
@@ -144,8 +155,8 @@ export default function MobileNav({ onClose }: MobileNavProps) {
   };
 
   return (
-    <section className="fixed inset-0 top-20 bg-white z-50 h-screen w-screen overflow-y-auto animate-in fade-in duration-300">
-      <div className="p-6">{navLinks.map((link) => renderNavItem(link))}</div>
+    <section className="fixed inset-0 top-22 bg-white z-50 h-screen w-screen overflow-y-auto animate-in fade-in duration-300">
+      <div className="p-8">{navLinks.map((link) => renderNavItem(link))}</div>
     </section>
   );
 }

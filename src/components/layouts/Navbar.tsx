@@ -9,7 +9,7 @@ export default function Navbar() {
   const toggleMenu = () => setOpen(!open);
 
   return (
-    <nav className="flex items-center justify-between relative max-w-7xl mx-auto w-full py-4 px-6 font-google-sans">
+    <nav className="flex items-center justify-between relative max-w-7xl mx-auto w-full px-8 lg:px-6 py-6 lg:py-4 font-google-sans">
       <div className="">
         <Image
           src="/images/logo.png"
@@ -19,7 +19,7 @@ export default function Navbar() {
           height={72}
         />
       </div>
-      <div className="hidden xl:flex items-center justify-center text-lg font-medium gap-4">
+      <div className="hidden xl:flex items-center justify-center text-lg font-medium gap-6">
         <Link href="#">About</Link>
         <Link href="#">Products</Link>
         <Link href="#">Applications</Link>
