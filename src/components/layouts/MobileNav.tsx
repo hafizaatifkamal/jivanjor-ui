@@ -155,8 +155,8 @@ export default function MobileNav({ onClose }: MobileNavProps) {
   };
 
   return (
-    <section className="fixed inset-0 top-22 bg-white z-50 h-screen w-screen overflow-y-auto animate-in fade-in duration-300">
-      <div className="p-8">{navLinks.map((link) => renderNavItem(link))}</div>
+    <section className="fixed inset-0 top-21 bg-white z-50 h-screen w-screen overflow-y-auto animate-in fade-in duration-300">
+      <div className="p-6">{navLinks.map((link) => renderNavItem(link))}</div>
     </section>
   );
 }
