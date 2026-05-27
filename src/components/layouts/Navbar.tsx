@@ -9,7 +9,7 @@ export default function Navbar() {
   const toggleMenu = () => setOpen(!open);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full h-22 bg-white/95 backdrop-blur-md border-b border-gray-100/80 shadow-xs transition-all duration-300 flex items-center">
+    <header id="main-landing-header" className="fixed top-0 left-0 right-0 z-50 w-full h-22 bg-white backdrop-blur-md transition-all duration-300 flex items-center">
       <nav className="flex items-center justify-between max-w-7xl mx-auto w-full px-8 lg:px-6 font-google-sans">
         <div className="shrink-0">
           <Image
@@ -36,19 +36,16 @@ export default function Navbar() {
         >
           <div className="flex flex-col items-end justify-between w-6 h-4.5">
             <span
-              className={`block h-0.5 w-full bg-primary transition-all duration-300 ${
-                open ? "rotate-45 translate-y-2" : ""
-              }`}
+              className={`block h-0.5 w-full bg-primary transition-all duration-300 ${open ? "rotate-45 translate-y-2" : ""
+                }`}
             ></span>
             <span
-              className={`block h-0.5 w-3/4 bg-primary transition-all duration-300 ${
-                open ? "opacity-0" : ""
-              }`}
+              className={`block h-0.5 w-3/4 bg-primary transition-all duration-300 ${open ? "opacity-0" : ""
+                }`}
             ></span>
             <span
-              className={`block h-0.5 w-full bg-primary transition-all duration-300 ${
-                open ? "-rotate-45 -translate-y-2" : ""
-              }`}
+              className={`block h-0.5 w-full bg-primary transition-all duration-300 ${open ? "-rotate-45 -translate-y-2" : ""
+                }`}
             ></span>
           </div>
         </button>

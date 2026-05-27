@@ -41,7 +41,7 @@ export default function RootLayout({
       lang="en"
       className={`${googleSans.variable} ${amethysta.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col pt-22">
+      <body className="min-h-full flex flex-col">
         <Navbar />
         {children}
         <Footer />

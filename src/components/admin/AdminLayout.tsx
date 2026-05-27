@@ -281,7 +281,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
 
             {/* Clickable Interactive Breadcrumbs - NO back arrow buttons */}
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <Link
                   href="/admin"
@@ -297,10 +297,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )}
               </div>
             </div>
-
-            <h2 className="sm:hidden text-lg font-black text-foreground">
-              {getPageTitle()}
-            </h2>
           </div>
 
           <div className="flex items-center gap-3">
