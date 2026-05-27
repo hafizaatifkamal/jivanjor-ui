@@ -14,7 +14,7 @@ export default function RightChoice() {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-linear-to-r from-[#772571] to-[#FF0009] h-21 lg:hidden" />
-      <div className="absolute inset-0 top-21">
+      <div className="absolute inset-0 top-21 lg:top-0">
         <Image
           src="/images/Rectangle 5.png"
           className="hidden lg:block object-fill"
@@ -29,9 +29,9 @@ export default function RightChoice() {
           priority
           fill
         />
-        <div className="hidden lg:absolute inset-0 bg-linear-to-b from-[#FF0009] to-[#772571] w-5" />
+        <div className="absolute hidden lg:block inset-0 bg-linear-to-b from-[#FF0009] to-[#772571] w-5" />
       </div>
-      <div className="flex flex-col items-center justify-between lg:flex-row relative mx-auto min-h-screen max-w-7xl gap-10 px-6 py-24 lg:px-12">
+      <div className="flex flex-col items-center justify-between lg:flex-row relative mx-auto min-h-screen max-w-7xl px-6 py-24 lg:px-12">
         <div className="max-w-xl text-center md:text-start pt-12 lg:pb-80">
           <h2 className="font-amethysta text-4xl md:text-5xl lg:text-6xl text-white">
             Find The Right Adhesive
@@ -41,7 +41,7 @@ export default function RightChoice() {
           {adhesiveTypes.map((type) => (
             <div
               key={type.title}
-              className="flex flex-col items-center justify-between text-center group cursor-pointer bg-white hover:bg-linear-to-tl from-[#FF0009] to-[#772571] min-w-40 sm:min-w-48 min-h-54 max-h-56 p-5 rounded-2xl"
+              className="flex flex-col items-center justify-between text-center group cursor-pointer bg-white hover:bg-linear-to-br from-[#FF0009] to-[#772571] min-w-40 sm:min-w-48 min-h-54 max-h-56 p-5 rounded-2xl"
             >
               <div className="flex flex-col items-center space-y-2">
                 <Image
