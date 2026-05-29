@@ -1,16 +1,51 @@
 import Image from "next/image";
 import { PlusCircle } from "lucide-react";
 
-const adhesiveTypes = [
-  { icon: "/images/image 4.svg", title: "Furniture and Woodwork" },
-  { icon: "/images/image 5.svg", title: "Kitchen Cabinets & Storage" },
-  { icon: "/images/image 6.svg", title: "Laminates & Surface Finishings" },
-  { icon: "/images/image 7.svg", title: "Moisture-Prone Woodwork" },
-  { icon: "/images/image 8.svg", title: "PVC, Acrylic & Edge Finishing" },
-  { icon: "/images/image 9.svg", title: "Home Repairs & Special Fixing" },
-];
+interface RightChoiceProps {
+  data?: {
+    title?: string;
+    subtitle?: string;
+    items?: Array<{
+      name?: string;
+      title?: string;
+      link?: string;
+    }>;
+  };
+}
 
-export default function RightChoice() {
+function mapAdhesiveIcon(index: number) {
+  const icons = [
+    "/images/image 4.svg",
+    "/images/image 5.svg",
+    "/images/image 6.svg",
+    "/images/image 7.svg",
+    "/images/image 8.svg",
+    "/images/image 9.svg",
+  ];
+  return icons[index % icons.length];
+}
+
+export default function RightChoice({ data }: RightChoiceProps) {
+  const title = data?.title || "Find The Right Adhesive";
+  const items = data?.items || [];
+
+  const defaultAdhesiveTypes = [
+    { icon: "/images/image 4.svg", title: "Furniture and Woodwork", link: "#" },
+    { icon: "/images/image 5.svg", title: "Kitchen Cabinets & Storage", link: "#" },
+    { icon: "/images/image 6.svg", title: "Laminates & Surface Finishings", link: "#" },
+    { icon: "/images/image 7.svg", title: "Moisture-Prone Woodwork", link: "#" },
+    { icon: "/images/image 8.svg", title: "PVC, Acrylic & Edge Finishing", link: "#" },
+    { icon: "/images/image 9.svg", title: "Home Repairs & Special Fixing", link: "#" },
+  ];
+
+  const types = items && items.length > 0
+    ? items.map((item, idx) => ({
+        icon: mapAdhesiveIcon(idx),
+        title: item.name || item.title || "",
+        link: item.link || "#",
+      }))
+    : defaultAdhesiveTypes;
+
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-linear-to-r from-[#772571] to-[#FF0009] h-21 lg:hidden" />
@@ -34,12 +69,18 @@ export default function RightChoice() {
       <div className="flex flex-col items-center justify-between lg:flex-row relative mx-auto min-h-screen max-w-7xl px-6 py-24 lg:px-12">
         <div className="max-w-xl text-center md:text-start pt-12 lg:pb-80">
           <h2 className="font-amethysta text-4xl md:text-5xl lg:text-6xl text-white">
-            Find The Right Adhesive
+            {title}
           </h2>
+          {data?.subtitle && (
+            <p className="mt-4 text-lg text-white/80 font-google-sans leading-relaxed">
+              {data.subtitle}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {adhesiveTypes.map((type) => (
-            <div
+          {types.map((type) => (
+            <a
+              href={type.link}
               key={type.title}
               className="flex flex-col items-center justify-between text-center group cursor-pointer bg-white hover:bg-linear-to-br from-[#FF0009] to-[#772571] min-w-40 sm:min-w-48 min-h-54 max-h-56 p-5 rounded-2xl"
             >
@@ -64,7 +105,7 @@ export default function RightChoice() {
                   Learn More
                 </button>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

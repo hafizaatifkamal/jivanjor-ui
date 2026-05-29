@@ -1,18 +1,54 @@
 import Image from "next/image";
 
-const features = [
-  { icon: "/images/Asterisk.png", title: "Consistent Quality" },
-  { icon: "/images/Up-and-down.png", title: "Ease of Application" },
-  { icon: "/images/Connection-point.png", title: "Range of Products" },
-  { icon: "/images/Tag.png", title: "Preferred by Experts" },
-];
+interface ProfessionalProps {
+  data?: {
+    title?: string;
+    subtitle?: string;
+    items?: Array<{
+      title?: string;
+      name?: string;
+    }>;
+  };
+}
 
-export default function Professional() {
+function mapFeatureIcon(index: number) {
+  const icons = [
+    "/images/Asterisk.png",
+    "/images/Up-and-down.png",
+    "/images/Connection-point.png",
+    "/images/Tag.png",
+  ];
+  return icons[index % icons.length];
+}
+
+export default function Professional({ data }: ProfessionalProps) {
+  const title = data?.title || "Why Professional Trust Jivanjor";
+  const items = data?.items || [];
+
+  const defaultFeatures = [
+    { icon: "/images/Asterisk.png", title: "Consistent Quality" },
+    { icon: "/images/Up-and-down.png", title: "Ease of Application" },
+    { icon: "/images/Connection-point.png", title: "Range of Products" },
+    { icon: "/images/Tag.png", title: "Preferred by Experts" },
+  ];
+
+  const features = items && items.length > 0
+    ? items.map((item, idx) => ({
+        icon: mapFeatureIcon(idx),
+        title: item.title || item.name || "",
+      }))
+    : defaultFeatures;
+
   return (
     <section className="mx-auto max-w-7xl text-center py-20 px-6">
       <h2 className="font-amethysta text-4xl md:text-5xl lg:text-6xl mb-10">
-        Why Professional Trust Jivanjor
+        {title}
       </h2>
+      {data?.subtitle && (
+        <p className="mb-10 text-xl text-foreground/80 font-google-sans max-w-3xl mx-auto -mt-6">
+          {data.subtitle}
+        </p>
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-center bg-surface gap-12 p-8 lg:p-10 pb-20 rounded-2xl">
         {features.map((f) => (
           <div key={f.title} className="flex flex-col items-center space-y-4">

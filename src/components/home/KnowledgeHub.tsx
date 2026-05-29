@@ -1,31 +1,73 @@
 import Image from "next/image";
 
-const cards = [
-  {
-    title: "Choosing the Right Adhesive",
-    image: "/images/Rectangle 69.png",
-  },
-  {
-    title: "Application Tips",
-    image: "/images/Rectangle 70.png",
-  },
-  {
-    title: "Fix Common Issues",
-    image: "/images/Rectangle 71.png",
-  },
-];
+interface KnowledgeHubProps {
+  data?: {
+    title?: string;
+    subtitle?: string;
+    items?: Array<{
+      title?: string;
+      summary?: string;
+      imageUrl?: string;
+      image?: string;
+      link?: string;
+    }>;
+  };
+}
 
-export default function KnowledgeHub() {
+function mapKnowledgeImage(index: number) {
+  const images = [
+    "/images/Rectangle 69.png",
+    "/images/Rectangle 70.png",
+    "/images/Rectangle 71.png",
+  ];
+  return images[index % images.length];
+}
+
+export default function KnowledgeHub({ data }: KnowledgeHubProps) {
+  const title = data?.title || "Knowledge Base & Guides";
+  const items = data?.items || [];
+
+  const defaultCards = [
+    {
+      title: "Choosing the Right Adhesive",
+      image: "/images/Rectangle 69.png",
+      link: "#",
+    },
+    {
+      title: "Application Tips",
+      image: "/images/Rectangle 70.png",
+      link: "#",
+    },
+    {
+      title: "Fix Common Issues",
+      image: "/images/Rectangle 71.png",
+      link: "#",
+    },
+  ];
+
+  const cards = items && items.length > 0
+    ? items.map((item, idx) => ({
+        title: item.title || "",
+        image: item.imageUrl || item.image || mapKnowledgeImage(idx),
+        link: item.link || "#",
+      }))
+    : defaultCards;
+
   return (
     <section className="relative overflow-hidden">
       <div className="mx-auto max-w-6xl justify-center px-6">
         <h2 className="font-amethysta font-normal text-center text-4xl md:text-5xl lg:text-6xl">
-          Knowledge Base & Guides
+          {title}
         </h2>
+        {data?.subtitle && (
+          <p className="mt-4 text-center text-xl text-foreground/80 font-google-sans max-w-3xl mx-auto">
+            {data.subtitle}
+          </p>
+        )}
         <div className="flex flex-col gap-6 py-12">
-          {cards.map((c) => (
+          {cards.map((c, idx) => (
             <div
-              key={c.title}
+              key={`${c.title}-${idx}`}
               className="bg-surface overflow-hidden rounded-3xl"
             >
               <div className="flex flex-col md:flex-row">
@@ -33,9 +75,9 @@ export default function KnowledgeHub() {
                   <h3 className="font-semibold text-4xl md:text-5xl max-w-96">
                     {c.title}
                   </h3>
-                  <button className="cursor-pointer font-medium text-center text-xs rounded-full px-4 py-1 border border-spacing-1.5 border-primary text-primary">
+                  <a href={c.link} className="inline-flex items-center justify-center cursor-pointer font-medium text-center text-xs rounded-full px-4 py-1 border border-spacing-1.5 border-primary text-primary hover:bg-primary/5 transition-colors">
                     Learn More
-                  </button>
+                  </a>
                 </div>
                 <div className="relative flex-1 min-h-80">
                   <Image
@@ -66,15 +108,15 @@ export default function KnowledgeHub() {
                 </div>
               </div>
               <div className="relative flex flex-col items-start flex-1 min-h-80 px-10 md:py-10 md:px-0 md:pr-10 space-y-4">
-                <p className="text-xl max-w-124">
+                <p className="text-xl max-w-124 font-google-sans leading-relaxed text-foreground/80">
                   Hear from the carpenters, contractors and dealers who rely on
                   Jivanjor for real projects. Hear from the carpenters,
                   contractors and dealers who rely on Jivanjor for real
                   projects.
                 </p>
-                <button className="font-medium min-w-35 px-4 py-2 rounded-3xl text-sm bg-linear-to-tr from-[#FF0009] to-[#772571] text-white">
+                <a href="/blogs" className="inline-flex items-center justify-center font-medium min-w-35 px-4 py-2 rounded-3xl text-sm bg-linear-to-tr from-[#FF0009] to-[#772571] text-white hover:opacity-90 transition-opacity text-center">
                   Learn More
-                </button>
+                </a>
               </div>
             </div>
           </div>
