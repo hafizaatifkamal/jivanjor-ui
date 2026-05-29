@@ -30,17 +30,34 @@ export default function SeoMetadataPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setSeos(api.getSeoMetadata());
-    setProducts(api.getProducts());
-    setCategories(api.getCategories());
-    setBlogs(api.getBlogPosts());
-    setUseCases(api.getUseCases());
-    setIssues(api.getIssues());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [seosList, prodsList, catsList, blogsList, casesList, issuesList] = await Promise.all([
+        api.getSeoMetadata(),
+        api.getProducts(),
+        api.getCategories(),
+        api.getBlogPosts(),
+        api.getUseCases(),
+        api.getIssues()
+      ]);
+      setSeos(seosList);
+      setProducts(prodsList);
+      setCategories(catsList);
+      setBlogs(blogsList);
+      setUseCases(casesList);
+      setIssues(issuesList);
+    } catch (err) {
+      console.error("Failed to load SEO and dependencies", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenAdd = () => {
@@ -104,20 +121,28 @@ export default function SeoMetadataPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveSeoMetadata({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveSeoMetadata({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save SEO config", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteSeoMetadata(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteSeoMetadata(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete SEO config", err);
+    }
   };
 
   // Helper to resolve linked record label
@@ -196,7 +221,16 @@ export default function SeoMetadataPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentSeos.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving SEO metadata from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentSeos.length > 0 ? (
                   currentSeos.map((seo) => (
                     <tr key={seo.id} className="hover:bg-gray-50/30 dark:hover:bg-zinc-800/20 transition-colors">
                       <td className="p-5">

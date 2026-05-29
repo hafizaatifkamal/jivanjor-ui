@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { api, Page, PageTemplate } from "@/lib/api";
-import { Plus, Search, Edit2, Trash2, X, Sparkles, FileText, LayoutTemplate } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, X, Sparkles, FileText, LayoutTemplate, AlertCircle } from "lucide-react";
 
 export default function PagesPage() {
   const [pages, setPages] = useState<Page[]>([]);
@@ -19,17 +19,31 @@ export default function PagesPage() {
     title: "",
     slug: "",
     description: "",
+    activeTemplateId: "" as string | null,
   });
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setPages(api.getPages());
-    setTemplates(api.getTemplates());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [pagesList, tempsList] = await Promise.all([
+        api.getPages(),
+        api.getTemplates()
+      ]);
+      setPages(pagesList);
+      setTemplates(tempsList);
+    } catch (err) {
+      console.error("Failed to load pages/templates", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTitleChange = (title: string) => {
@@ -46,6 +60,7 @@ export default function PagesPage() {
       title: "",
       slug: "",
       description: "",
+      activeTemplateId: null,
     });
     setIsModalOpen(true);
   };
@@ -56,24 +71,33 @@ export default function PagesPage() {
       title: page.title,
       slug: page.slug,
       description: page.description || "",
+      activeTemplateId: page.activeTemplateId || null,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.savePage({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.savePage({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save page", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deletePage(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deletePage(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete page", err);
+    }
   };
 
   // Filter Pages
@@ -131,16 +155,24 @@ export default function PagesPage() {
               <thead>
                 <tr className="border-b border-border bg-surface/55">
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Page Pathway</th>
-                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Templates Attached</th>
+                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Active Layout Template</th>
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Description</th>
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {currentPages.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="p-10 text-center text-sm font-semibold text-foreground/40 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        <span>Retrieving dynamic pages from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentPages.length > 0 ? (
                   currentPages.map((page) => {
-                    const pageTemplates = templates.filter((t) => t.pageId === page.id);
-                    const activeTemplate = pageTemplates.find((t) => t.isActive);
+                    const activeTemplate = templates.find((t) => t.id === page.activeTemplateId);
                     return (
                       <tr key={page.id} className="hover:bg-surface/30 transition-colors">
                         <td className="p-5">
@@ -155,17 +187,22 @@ export default function PagesPage() {
                           </div>
                         </td>
                         <td className="p-5">
-                          <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-foreground/80">
-                              <LayoutTemplate className="h-3.5 w-3.5 text-primary" />
-                              <span>{pageTemplates.length} Mapped</span>
-                            </span>
-                            {activeTemplate && (
-                              <span className="text-[9px] font-black uppercase text-green-600 bg-green-50 dark:bg-green-950/20 px-1.5 py-0.5 rounded self-start">
-                                Active: {activeTemplate.name}
+                          {activeTemplate ? (
+                            <div className="flex flex-col gap-1">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30 self-start">
+                                <LayoutTemplate className="h-3.5 w-3.5 shrink-0 text-green-600" />
+                                <span>{activeTemplate.name}</span>
                               </span>
-                            )}
-                          </div>
+                              <span className="text-[10px] text-foreground/45 font-bold uppercase tracking-wider pl-1">
+                                Slug: {activeTemplate.slug}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-surface text-foreground/40 border border-border self-start">
+                              <AlertCircle className="h-3.5 w-3.5 text-foreground/30 shrink-0" />
+                              <span>No Layout Mapped (Draft)</span>
+                            </span>
+                          )}
                         </td>
                         <td className="p-5 text-sm text-foreground/60 max-w-xs truncate">
                           {page.description || "No description provided."}
@@ -288,6 +325,33 @@ export default function PagesPage() {
                     className="w-full px-4 py-3 rounded-xl border border-border bg-surface/50 text-sm outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 dark:focus:border-primary resize-none"
                   />
                 </div>
+
+                {editingId && (
+                  <div>
+                    <label className="block text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
+                      Active Layout Template
+                    </label>
+                    {templates.length > 0 ? (
+                      <select
+                        value={formData.activeTemplateId || ""}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, activeTemplateId: e.target.value || null }))}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface/50 text-sm outline-none focus:border-primary focus:bg-background focus:ring-2 focus:ring-primary/20 dark:focus:border-primary text-foreground cursor-pointer"
+                      >
+                        <option value="">-- No Active Template (Draft Mode) --</option>
+                        {templates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} ({t.slug})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="p-4 bg-surface/30 border border-border rounded-xl text-xs text-foreground/50 font-semibold flex items-center gap-2">
+                        <LayoutTemplate className="h-4.5 w-4.5 text-foreground/45" />
+                        <span>No layout templates assembled in the system yet. Build one in the Templates Manager first.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                   <button

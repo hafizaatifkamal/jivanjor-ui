@@ -36,20 +36,33 @@ export default function TemplatesPage() {
   
   const [templateName, setTemplateName] = useState("");
   const [templateSlug, setTemplateSlug] = useState("");
-  const [selectedPageId, setSelectedPageId] = useState("");
   const [sections, setSections] = useState<PageTemplateSection[]>([]);
 
   // Deletion confirm state
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setTemplates(api.getTemplates());
-    const dynamicPages = api.getPages();
-    setPages(dynamicPages);
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [templatesList, pagesList] = await Promise.all([
+        api.getTemplates(),
+        api.getPages()
+      ]);
+      setTemplates(templatesList);
+      setPages(pagesList);
+      
+
+    } catch (err) {
+      console.error("Failed to load templates/pages", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNameChange = (name: string) => {
@@ -65,7 +78,6 @@ export default function TemplatesPage() {
     setEditingId(null);
     setTemplateName("");
     setTemplateSlug("");
-    setSelectedPageId(pages[0]?.id || "");
     setSections([]);
     setIsModalOpen(true);
   };
@@ -74,7 +86,6 @@ export default function TemplatesPage() {
     setEditingId(template.id);
     setTemplateName(template.name);
     setTemplateSlug(template.slug);
-    setSelectedPageId(template.pageId);
     // Sort sections by order before editing
     const sorted = [...template.sections].sort((a, b) => a.order - b.order);
     setSections(sorted);
@@ -124,37 +135,41 @@ export default function TemplatesPage() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveTemplate({
-      id: editingId || undefined,
-      name: templateName,
-      slug: templateSlug,
-      pageId: selectedPageId,
-      isActive: editingId ? (templates.find((t) => t.id === editingId)?.isActive || false) : false,
-      sections,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveTemplate({
+        id: editingId || undefined,
+        name: templateName,
+        slug: templateSlug,
+        sections,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save template", err);
+    }
   };
 
-  const handleToggleActivate = (id: string) => {
-    api.activateTemplate(id);
-    loadData();
-  };
 
-  const handleDeleteTemplate = (id: string) => {
-    api.deleteTemplate(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      await api.deleteTemplate(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete template", err);
+    }
   };
 
   // Filter templates
   const filteredTemplates = templates.filter((t) => {
-    const pageName = pages.find((p) => p.id === t.pageId)?.title || "";
+    const activePages = pages.filter((p) => p.activeTemplateId === t.id);
+    const activePagesName = activePages.map((p) => p.title).join(", ");
     const matchesSearch =
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      pageName.toLowerCase().includes(search.toLowerCase());
+      t.slug.toLowerCase().includes(search.toLowerCase()) ||
+      activePagesName.toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
 
@@ -206,16 +221,25 @@ export default function TemplatesPage() {
               <thead>
                 <tr className="border-b border-border bg-surface/55">
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Template Layout</th>
-                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Mapped Page Target</th>
+                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Active On Page(s)</th>
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Sections Plan</th>
-                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Activation Trigger</th>
+                  <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider">Status</th>
                   <th className="p-5 text-xs font-bold text-foreground/45 uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {currentTemplates.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-sm font-semibold text-foreground/40 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        <span>Retrieving page templates from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentTemplates.length > 0 ? (
                   currentTemplates.map((temp) => {
-                    const page = pages.find((p) => p.id === temp.pageId);
+                    const activePages = pages.filter((p) => p.activeTemplateId === temp.id);
                     return (
                       <tr key={temp.id} className="hover:bg-surface/30 transition-colors">
                         <td className="p-5">
@@ -230,7 +254,17 @@ export default function TemplatesPage() {
                           </div>
                         </td>
                         <td className="p-5 text-sm font-semibold text-foreground/80">
-                          {page ? page.title : "Unassigned Page Reference"}
+                          {activePages.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {activePages.map((p) => (
+                                <span key={p.id} className="inline-flex items-center gap-1 text-xs font-bold text-foreground">
+                                  {p.title}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Draft (Unassigned)</span>
+                          )}
                         </td>
                         <td className="p-5">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-surface text-foreground/80 border border-border">
@@ -240,24 +274,16 @@ export default function TemplatesPage() {
                         </td>
                         <td className="p-5">
                           <div className="flex items-center gap-2">
-                            {temp.isActive ? (
-                              <button
-                                onClick={() => handleToggleActivate(temp.id)}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30 cursor-pointer"
-                                title="Click to deactivate template"
-                              >
+                            {activePages.length > 0 ? (
+                              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/30">
                                 <CheckCircle2 className="h-4 w-4 shrink-0" />
-                                <span>LIVE ACTIVE</span>
-                              </button>
+                                <span>Active Layout</span>
+                              </span>
                             ) : (
-                              <button
-                                onClick={() => handleToggleActivate(temp.id)}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-foreground/50 bg-surface border border-border hover:bg-primary/5 hover:text-primary transition-all cursor-pointer"
-                                title="Click to set layout live"
-                              >
+                              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-foreground/50 bg-surface border border-border">
                                 <AlertCircle className="h-4 w-4 shrink-0" />
-                                <span>Draft (Make Live)</span>
-                              </button>
+                                <span>Draft (Unused)</span>
+                              </span>
                             )}
                           </div>
                         </td>
@@ -340,7 +366,7 @@ export default function TemplatesPage() {
               {/* Scrollable Form & Builder */}
               <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Meta Inputs */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-surface/35 border border-border rounded-2xl">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-surface/35 border border-border rounded-2xl">
                   <div>
                     <label className="block text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
                       Template Layout Name
@@ -370,21 +396,6 @@ export default function TemplatesPage() {
                       placeholder="consultation-landing"
                       className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
-                      Map to Dynamic Page
-                    </label>
-                    <select
-                      value={selectedPageId}
-                      onChange={(e) => setSelectedPageId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary"
-                    >
-                      {pages.map((p) => (
-                        <option key={p.id} value={p.id}>{p.title} (/{p.slug})</option>
-                      ))}
-                    </select>
                   </div>
                 </div>
 

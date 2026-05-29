@@ -23,12 +23,22 @@ export default function IssuesPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setIssues(api.getIssues());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getIssues();
+      setIssues(data);
+    } catch (err) {
+      console.error("Failed to load issues", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTitleChange = (title: string) => {
@@ -61,20 +71,28 @@ export default function IssuesPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveIssue({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveIssue({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save issue", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteIssue(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteIssue(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete issue", err);
+    }
   };
 
   // Filter Issues
@@ -139,7 +157,16 @@ export default function IssuesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentIssues.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving support guidelines from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentIssues.length > 0 ? (
                   currentIssues.map((issue) => (
                     <tr key={issue.id} className="hover:bg-gray-50/30 dark:hover:bg-zinc-800/20 transition-colors">
                       <td className="p-5">

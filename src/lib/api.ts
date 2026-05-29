@@ -1,3 +1,6 @@
+import axios from "axios";
+import { getAuthToken } from "./auth";
+
 export interface User {
   id: string;
   name: string;
@@ -73,6 +76,7 @@ export interface Page {
   title: string;
   slug: string;
   description?: string;
+  activeTemplateId?: string | null;
 }
 
 export interface PageTemplateSection {
@@ -91,523 +95,435 @@ export interface PageTemplate {
   id: string;
   name: string;
   slug: string;
-  pageId: string;
   isActive: boolean;
   sections: PageTemplateSection[];
 }
 
-// Key names for localStorage
-const KEYS = {
-  PRODUCTS: "jivanjor_products",
-  CATEGORIES: "jivanjor_categories",
-  MATERIALS: "jivanjor_materials",
-  USE_CASES: "jivanjor_use_cases",
-  ISSUES: "jivanjor_issues",
-  BLOG_POSTS: "jivanjor_blog_posts",
-  SEO_METADATA: "jivanjor_seo_metadata",
-  PAGES: "jivanjor_pages",
-  TEMPLATES: "jivanjor_templates",
-};
+// Set up Axios Client
+const API_BASE = "http://localhost:8000/api";
 
-// Seed Data
-const SEED_CATEGORIES: Category[] = [
-  { id: "cat-1", name: "Premium Adhesives", slug: "premium-adhesives", parent_category: "", description: "High-strength wood adhesives and glues for laminates and veneers." },
-  { id: "cat-2", name: "Waterproof Adhesives", slug: "waterproof-adhesives", parent_category: "", description: "Advanced water-resistant adhesives ideal for kitchens, bathrooms, and marine furniture." },
-  { id: "cat-3", name: "Fast Curing", slug: "fast-curing", parent_category: "cat-1", description: "Quick-setting formulations that cut down clamping time." },
-  { id: "cat-4", name: "Wood Finishes", slug: "wood-finishes", parent_category: "", description: "Premium polishes, varnishes, and sealants to preserve and enhance wood grain." },
-];
-
-const SEED_MATERIALS: Material[] = [
-  { id: "mat-1", name: "Plywood", description: "Standard structural engineered wood panels." },
-  { id: "mat-2", name: "MDF & Particle Board", description: "Medium-density fiberboards sensitive to moisture and requiring specialized bonding." },
-  { id: "mat-3", name: "Veneer & Laminates", description: "Thin decorative sheets used for premium surface finishing." },
-  { id: "mat-4", name: "Solid Wood", description: "Natural lumber logs of teak, oak, mahogany, etc." },
-];
-
-const SEED_PRODUCTS: Product[] = [
-  {
-    id: "prod-1",
-    name: "Jivanjor WaterShield 2-in-1",
-    slug: "jivanjor-watershield-2-in-1",
-    description: "Our flagship synthetic resin adhesive offering premium water resistance and unmatched bond strength. Specifically formulated for high-end furniture items subject to heavy moisture exposure.",
-    category_id: "cat-2",
-    material_id: "mat-1",
-    metadata: "water-resistant, synthetic resin, marine-grade, high-bond",
-    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop"
+const client = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    "Content-Type": "application/json",
   },
-  {
-    id: "prod-2",
-    name: "Jivanjor FastXpress",
-    slug: "jivanjor-fastxpress",
-    description: "An incredibly fast-curing adhesive designed to reach strong bonding strength in under 2 hours. Cuts down clamping time by 60%, allowing craftsmen to work efficiently.",
-    category_id: "cat-3",
-    material_id: "mat-3",
-    metadata: "quick-dry, fast-bond, efficient, time-saver",
-    image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop"
+});
+
+// Request Interceptor to automatically add JWT Token
+client.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
-  {
-    id: "prod-3",
-    name: "Lamino Super Strong",
-    slug: "lamino-super-strong",
-    description: "Specially formulated for pasting laminates and veneers to wood/plywood surfaces. Spreads evenly, prevents bubbling, and guarantees zero edge warping over time.",
-    category_id: "cat-1",
-    material_id: "mat-3",
-    metadata: "laminate adhesive, veneer-glue, bubbles-free, uniform-spread",
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=400&auto=format&fit=crop"
+  (error) => {
+    return Promise.reject(error);
   }
-];
+);
 
-const SEED_USE_CASES: UseCase[] = [
-  {
-    id: "uc-1",
-    title: "Kitchen & Bathroom Cabinets Bonding",
-    slug: "kitchen-bathroom-cabinets-bonding",
-    description: "High-humidity environments require adhesives that block moisture penetration. Using Jivanjor WaterShield prevents joint splits and peeling laminate edges due to steam and splashes."
-  },
-  {
-    id: "uc-2",
-    title: "Premium Office Veneer Inlays",
-    slug: "premium-office-veneer-inlays",
-    description: "Delicate veneer designs require non-staining, smooth-spreading adhesives. Learn how Lamino Super Strong provides flawless bonding without damaging thin expensive sheets."
-  }
-];
+// Mappers for backward compatibility with UI schemas
+function mapCategoryFromBackend(cat: any): Category {
+  return {
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    parent_category: cat.parentId || "",
+    description: cat.description || "",
+  };
+}
 
-const SEED_ISSUES: Issue[] = [
-  {
-    id: "iss-1",
-    issue_title: "How to prevent bubbles under pasted laminates?",
-    slug: "preventing-bubbles-laminates",
-    problem: "When applying laminate sheets on MDF or Plywood, small air pockets or uneven application can lead to unsightly bumps and bubbles that ruin the surface finish.",
-    solution: "1. Ensure the substrate is completely clean and dust-free.\n2. Apply the adhesive uniformly using a notched trowel on both surfaces.\n3. Let the solvent vent for 5-10 minutes until tacky.\n4. Apply pressure from the center outwards using a heavy roller to squeeze out all air before clamping."
-  },
-  {
-    id: "iss-2",
-    issue_title: "How to glue joints in high humidity locations?",
-    slug: "gluing-humid-locations",
-    problem: "Standard white glues degrade over time when subjected to constant humidity, causing structural wooden furniture joints to fail or open up.",
-    solution: "Always utilize Jivanjor WaterShield adhesive. It contains a specialized water-resistant polymer mesh that does not dissolve or soften when exposed to water or steam, maintaining joint integrity for decades."
-  }
-];
+function mapMaterialFromBackend(mat: any): Material {
+  return {
+    id: mat.id,
+    name: mat.materialName,
+    description: mat.description || "",
+  };
+}
 
-const SEED_BLOG_POSTS: BlogPost[] = [
-  {
-    id: "blog-1",
-    title: "5 Essential Furniture Carpentry Tips for Beginners",
-    slug: "essential-furniture-carpentry-tips",
-    content: "Building furniture is an incredibly rewarding trade, but starting out can feel overwhelming. In this blog, we explore the top 5 carpentry secrets every beginner must master to achieve professional-grade finishes, from wood moisture reading to selecting the correct synthetic adhesive grade like Jivanjor.",
-    category: "Carpentry Guide",
-    tags: ["woodworking", "carpentry", "beginner-tips", "adhesives"],
-    author: "Master Craftsman Anand",
-    publish_date: "2026-05-10",
-    image: "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?q=80&w=400&auto=format&fit=crop"
-  },
-  {
-    id: "blog-2",
-    title: "Why Waterproof Adhesives are Non-Negotiable for Kitchen Decors",
-    slug: "why-waterproof-adhesives-non-negotiable",
-    content: "Kitchen counters and cupboards face severe moisture stress daily due to sink splashes, cooking steam, and spillages. Using standard wooden glue is a recipe for disaster. This article explains the science behind waterproof polymers and why marine-grade solutions protect your expensive modular kitchen investments.",
-    category: "Product Science",
-    tags: ["waterproof", "kitchen-design", "jivanjor", "innovation"],
-    author: "Dr. R. K. Mehta (R&D Lead)",
-    publish_date: "2026-05-22",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?q=80&w=400&auto=format&fit=crop"
-  }
-];
-
-const SEED_SEO: SeoMetadata[] = [
-  { id: "seo-1", page_type: "home", page_id: "home", meta_title: "Jivanjor - Premium Adhesives & Wood Finishes", meta_description: "Explore Jivanjor's collection of high-strength synthetic adhesives, waterproof marine glues, and exquisite wood finishes designed for perfectionists.", canonical_url: "https://jivanjor.com" },
-  { id: "seo-2", page_type: "product", page_id: "prod-1", meta_title: "Jivanjor WaterShield 2-in-1 - Extreme Water Resistant Glue", meta_description: "Discover WaterShield 2-in-1, Jivanjor's top marine-grade wood adhesive. Perfect for high-moisture kitchen, bathroom, and outdoor structural woodwork.", canonical_url: "https://jivanjor.com/products/jivanjor-watershield-2-in-1" },
-  { id: "seo-3", page_type: "blog", page_id: "blog-2", meta_title: "Why Marine Grade Adhesives Matter in Modular Kitchens", meta_description: "Learn how steam and water splash impact standard glues, and why Jivanjor marine waterproof adhesives are essential for beautiful modular setups.", canonical_url: "https://jivanjor.com/blog/why-waterproof-adhesives-non-negotiable" }
-];
-
-const SEED_PAGES: Page[] = [
-  { id: "page-1", title: "Dealer Onboarding Portal", slug: "dealer-onboarding", description: "Bespoke sign-up pathway for hardware shops, adhesive distributors, and carpenters networks." },
-  { id: "page-2", title: "Architect Design consultations", slug: "architect-consultations", description: "Bespoke consultancy portal linking custom furniture architects with Jivanjor polymer R&D labs." }
-];
-
-const SEED_TEMPLATES: PageTemplate[] = [
-  {
-    id: "temp-1",
-    name: "Partner Sign-up Layout",
-    slug: "partner-sign-up-layout",
-    pageId: "page-1",
-    isActive: true,
-    sections: [
-      {
-        id: "sec-1",
-        type: "hero",
-        title: "Become a Registered Jivanjor Adhesives Dealer",
-        subtitle: "Join India's fastest growing network of wood-bonding specialists. High margins, priority supply, and seasonal carpenter rewards.",
-        image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=600&auto=format&fit=crop",
-        ctaText: "Apply Online Now",
-        ctaLink: "#registration-form",
-        order: 1
-      },
-      {
-        id: "sec-2",
-        type: "features",
-        title: "Key Distributor Advantages",
-        content: "• Guaranteed authentic synthetic resins shipped direct from manufacturing facilities.\n• Dedicated regional manager and custom marketing banner displays.\n• Earn Jivanjor loyalty points redeemable for physical gifts and cashback.",
-        order: 2
+function mapProductFromBackend(prod: any): Product {
+  let metadataStr = "";
+  if (prod.metadata) {
+    if (typeof prod.metadata === "string") {
+      metadataStr = prod.metadata;
+    } else if (typeof prod.metadata === "object") {
+      if ("tags" in prod.metadata && typeof prod.metadata.tags === "string") {
+        metadataStr = prod.metadata.tags;
+      } else if ("list" in prod.metadata && Array.isArray(prod.metadata.list)) {
+        metadataStr = prod.metadata.list.join(", ");
+      } else {
+        metadataStr = Object.entries(prod.metadata)
+          .map(([k, v]) => Array.isArray(v) ? `${k}: ${v.join("/")}` : `${k}: ${v}`)
+          .join(", ");
       }
-    ]
-  },
-  {
-    id: "temp-2",
-    name: "Architect Consultation Premium Layout",
-    slug: "architect-consultation-premium-layout",
-    pageId: "page-2",
-    isActive: true,
-    sections: [
-      {
-        id: "sec-3",
-        type: "hero",
-        title: "Empowering Modern Wooden Architecture",
-        subtitle: "Tailor-made adhesive specifications matching environmental stresses, wood moisture levels, and structural finishes.",
-        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop",
-        ctaText: "Schedule Call with R&D",
-        ctaLink: "#contact-consultant",
-        order: 1
-      },
-      {
-        id: "sec-4",
-        type: "text",
-        title: "Our Scientific Bonding Assessment Strategy",
-        content: "Wood polymer engineering is vital for premium architectural structures. Jivanjor engineers carry out rigorous tests under moisture cycles, humidity stressors, and temperature ranges to assign structural polymers that guarantee joint durability for decades.",
-        order: 2
-      }
-    ]
+    }
   }
-];
-
-// Helper to check if browser environment is ready
-function isClient() {
-  return typeof window !== "undefined";
+  return {
+    id: prod.id,
+    name: prod.name,
+    slug: prod.slug,
+    description: prod.description || "",
+    category_id: prod.categoryId,
+    material_id: prod.materialId || "",
+    metadata: metadataStr,
+    image: prod.image || "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop",
+  };
 }
 
-// Retrieve from localStorage or seed
-function getStorageItem<T>(key: string, seed: T[]): T[] {
-  if (!isClient()) return seed;
-  const item = localStorage.getItem(key);
-  if (!item) {
-    localStorage.setItem(key, JSON.stringify(seed));
-    return seed;
-  }
-  try {
-    return JSON.parse(item);
-  } catch (e) {
-    console.error("Failed to parse storage key: " + key, e);
-    return seed;
-  }
+function mapIssueFromBackend(iss: any): Issue {
+  return {
+    id: iss.id,
+    issue_title: iss.issueTitle,
+    slug: iss.slug,
+    problem: iss.problem || "",
+    solution: iss.solution || "",
+  };
 }
 
-// Save to localStorage
-function setStorageItem<T>(key: string, data: T[]) {
-  if (!isClient()) return;
-  localStorage.setItem(key, JSON.stringify(data));
+function mapBlogPostFromBackend(post: any): BlogPost {
+  let tagsArray: string[] = [];
+  if (post.tags) {
+    if (Array.isArray(post.tags)) {
+      tagsArray = post.tags;
+    } else if (typeof post.tags === "string") {
+      tagsArray = post.tags.split(",").map((t: string) => t.trim());
+    } else if (typeof post.tags === "object" && "tags" in post.tags) {
+      tagsArray = (post.tags as any).tags;
+    }
+  }
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    content: post.content || "",
+    category: post.category || "",
+    tags: tagsArray,
+    author: post.author || "",
+    publish_date: post.publishDate ? new Date(post.publishDate).toISOString().split("T")[0] : "",
+    image: post.image || "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?q=80&w=400&auto=format&fit=crop",
+  };
 }
 
-// API methods
+function mapSeoFromBackend(seo: any): SeoMetadata {
+  const isHome = seo.pageType === "STATIC" && (seo.pageId === "STATIC_PAGE" || !seo.pageId);
+  return {
+    id: seo.id,
+    page_type: isHome ? "home" : (seo.pageType || "").toLowerCase().replace("_", "-"),
+    page_id: isHome ? "home" : (seo.pageId || ""),
+    meta_title: seo.metaTitle || "",
+    meta_description: seo.metaDescription || "",
+    canonical_url: seo.canonicalUrl || "",
+  };
+}
+
+function mapTemplateFromBackend(temp: any): PageTemplate {
+  let sectionsArray: PageTemplateSection[] = [];
+  if (Array.isArray(temp.sections)) {
+    sectionsArray = temp.sections;
+  } else if (temp.sections && typeof temp.sections === "object") {
+    sectionsArray = Object.entries(temp.sections).map(([key, val]: [string, any], idx) => ({
+      id: val.id || `sec-${key}-${idx}`,
+      type: (val.type || key) as any,
+      title: val.title || "",
+      subtitle: val.subtitle || val.subtitleText || "",
+      content: val.content || val.description || "",
+      image: val.image || val.backgroundImage || val.imageUrl || "",
+      ctaText: val.ctaText || "",
+      ctaLink: val.ctaLink || "",
+      order: val.order || (idx + 1),
+    }));
+  }
+  return {
+    id: temp.id,
+    name: temp.name,
+    slug: temp.slug,
+    isActive: !!temp.isActive,
+    sections: sectionsArray,
+  };
+}
+
+// API methods calling axios
 export const api = {
   // PRODUCTS
-  getProducts: (): Product[] => getStorageItem<Product>(KEYS.PRODUCTS, SEED_PRODUCTS),
-  getProductById: (id: string): Product | undefined => api.getProducts().find(p => p.id === id),
-  saveProduct: (product: Omit<Product, "id"> & { id?: string }): Product => {
-    const products = api.getProducts();
-    let savedProduct: Product;
-    if (product.id) {
-      // Edit
-      products.forEach((p, idx) => {
-        if (p.id === product.id) {
-          products[idx] = { ...p, ...product } as Product;
-        }
-      });
-      savedProduct = products.find(p => p.id === product.id)!;
-    } else {
-      // Create
-      savedProduct = {
-        ...product,
-        id: `prod-${Date.now()}`,
-      };
-      products.push(savedProduct);
-    }
-    setStorageItem(KEYS.PRODUCTS, products);
-    return savedProduct;
+  getProducts: async (): Promise<Product[]> => {
+    const res = await client.get("/products");
+    const products = res.data?.data?.products || [];
+    return Array.isArray(products) ? products.map(mapProductFromBackend) : [];
   },
-  deleteProduct: (id: string): boolean => {
-    const products = api.getProducts();
-    const filtered = products.filter(p => p.id !== id);
-    if (filtered.length === products.length) return false;
-    setStorageItem(KEYS.PRODUCTS, filtered);
+  getProductById: async (id: string): Promise<Product | undefined> => {
+    const res = await client.get(`/products/${id}`);
+    const product = res.data?.data?.product;
+    return product ? mapProductFromBackend(product) : undefined;
+  },
+  saveProduct: async (product: Omit<Product, "id"> & { id?: string }): Promise<Product> => {
+    const payload = {
+      name: product.name,
+      description: product.description,
+      categoryId: product.category_id,
+      materialId: product.material_id || null,
+      metadata: { tags: product.metadata },
+    };
+    if (product.id) {
+      const res = await client.put(`/products/${product.id}`, payload);
+      return mapProductFromBackend(res.data?.data?.product);
+    } else {
+      const res = await client.post("/products", payload);
+      return mapProductFromBackend(res.data?.data?.product);
+    }
+  },
+  deleteProduct: async (id: string): Promise<boolean> => {
+    await client.delete(`/products/${id}`);
     return true;
   },
 
   // CATEGORIES
-  getCategories: (): Category[] => getStorageItem<Category>(KEYS.CATEGORIES, SEED_CATEGORIES),
-  getCategoryById: (id: string): Category | undefined => api.getCategories().find(c => c.id === id),
-  saveCategory: (category: Omit<Category, "id"> & { id?: string }): Category => {
-    const categories = api.getCategories();
-    let saved: Category;
-    if (category.id) {
-      categories.forEach((c, idx) => {
-        if (c.id === category.id) {
-          categories[idx] = { ...c, ...category } as Category;
-        }
-      });
-      saved = categories.find(c => c.id === category.id)!;
-    } else {
-      saved = {
-        ...category,
-        id: `cat-${Date.now()}`,
-      };
-      categories.push(saved);
-    }
-    setStorageItem(KEYS.CATEGORIES, categories);
-    return saved;
+  getCategories: async (): Promise<Category[]> => {
+    const res = await client.get("/categories");
+    const categories = res.data?.data?.categories || [];
+    return Array.isArray(categories) ? categories.map(mapCategoryFromBackend) : [];
   },
-  deleteCategory: (id: string): boolean => {
-    const categories = api.getCategories();
-    const filtered = categories.filter(c => c.id !== id);
-    if (filtered.length === categories.length) return false;
-    setStorageItem(KEYS.CATEGORIES, filtered);
+  getCategoryById: async (id: string): Promise<Category | undefined> => {
+    const res = await client.get(`/categories/${id}`);
+    const category = res.data?.data?.category;
+    return category ? mapCategoryFromBackend(category) : undefined;
+  },
+  saveCategory: async (category: Omit<Category, "id"> & { id?: string }): Promise<Category> => {
+    const payload = {
+      name: category.name,
+      parentId: category.parent_category || null,
+      description: category.description || "",
+    };
+    if (category.id) {
+      const res = await client.put(`/categories/${category.id}`, payload);
+      return mapCategoryFromBackend(res.data?.data?.category);
+    } else {
+      const res = await client.post("/categories", payload);
+      return mapCategoryFromBackend(res.data?.data?.category);
+    }
+  },
+  deleteCategory: async (id: string): Promise<boolean> => {
+    await client.delete(`/categories/${id}`);
     return true;
   },
 
   // MATERIALS
-  getMaterials: (): Material[] => getStorageItem<Material>(KEYS.MATERIALS, SEED_MATERIALS),
-  getMaterialById: (id: string): Material | undefined => api.getMaterials().find(m => m.id === id),
-  saveMaterial: (material: Omit<Material, "id"> & { id?: string }): Material => {
-    const materials = api.getMaterials();
-    let saved: Material;
-    if (material.id) {
-      materials.forEach((m, idx) => {
-        if (m.id === material.id) {
-          materials[idx] = { ...m, ...material } as Material;
-        }
-      });
-      saved = materials.find(m => m.id === material.id)!;
-    } else {
-      saved = {
-        ...material,
-        id: `mat-${Date.now()}`,
-      };
-      materials.push(saved);
-    }
-    setStorageItem(KEYS.MATERIALS, materials);
-    return saved;
+  getMaterials: async (): Promise<Material[]> => {
+    const res = await client.get("/materials");
+    const list = res.data?.data?.materials || [];
+    return Array.isArray(list) ? list.map(mapMaterialFromBackend) : [];
   },
-  deleteMaterial: (id: string): boolean => {
-    const materials = api.getMaterials();
-    const filtered = materials.filter(m => m.id !== id);
-    if (filtered.length === materials.length) return false;
-    setStorageItem(KEYS.MATERIALS, filtered);
+  getMaterialById: async (id: string): Promise<Material | undefined> => {
+    const res = await client.get(`/materials/${id}`);
+    const material = res.data?.data?.material;
+    return material ? mapMaterialFromBackend(material) : undefined;
+  },
+  saveMaterial: async (material: Omit<Material, "id"> & { id?: string }): Promise<Material> => {
+    const payload = {
+      materialName: material.name,
+      description: material.description || "",
+    };
+    if (material.id) {
+      const res = await client.put(`/materials/${material.id}`, payload);
+      return mapMaterialFromBackend(res.data?.data?.material);
+    } else {
+      const res = await client.post("/materials", payload);
+      return mapMaterialFromBackend(res.data?.data?.material);
+    }
+  },
+  deleteMaterial: async (id: string): Promise<boolean> => {
+    await client.delete(`/materials/${id}`);
     return true;
   },
 
   // USE CASES
-  getUseCases: (): UseCase[] => getStorageItem<UseCase>(KEYS.USE_CASES, SEED_USE_CASES),
-  getUseCaseById: (id: string): UseCase | undefined => api.getUseCases().find(u => u.id === id),
-  saveUseCase: (useCase: Omit<UseCase, "id"> & { id?: string }): UseCase => {
-    const useCases = api.getUseCases();
-    let saved: UseCase;
-    if (useCase.id) {
-      useCases.forEach((u, idx) => {
-        if (u.id === useCase.id) {
-          useCases[idx] = { ...u, ...useCase } as UseCase;
-        }
-      });
-      saved = useCases.find(u => u.id === useCase.id)!;
-    } else {
-      saved = {
-        ...useCase,
-        id: `uc-${Date.now()}`,
-      };
-      useCases.push(saved);
-    }
-    setStorageItem(KEYS.USE_CASES, useCases);
-    return saved;
+  getUseCases: async (): Promise<UseCase[]> => {
+    const res = await client.get("/use-cases");
+    const list = res.data?.data?.useCases || [];
+    return Array.isArray(list) ? list : [];
   },
-  deleteUseCase: (id: string): boolean => {
-    const useCases = api.getUseCases();
-    const filtered = useCases.filter(u => u.id !== id);
-    if (filtered.length === useCases.length) return false;
-    setStorageItem(KEYS.USE_CASES, filtered);
+  getUseCaseById: async (id: string): Promise<UseCase | undefined> => {
+    const res = await client.get(`/use-cases/${id}`);
+    return res.data?.data?.useCase;
+  },
+  saveUseCase: async (useCase: Omit<UseCase, "id"> & { id?: string }): Promise<UseCase> => {
+    const payload = {
+      title: useCase.title,
+      description: useCase.description,
+    };
+    if (useCase.id) {
+      const res = await client.put(`/use-cases/${useCase.id}`, payload);
+      return res.data?.data?.useCase;
+    } else {
+      const res = await client.post("/use-cases", payload);
+      return res.data?.data?.useCase;
+    }
+  },
+  deleteUseCase: async (id: string): Promise<boolean> => {
+    await client.delete(`/use-cases/${id}`);
     return true;
   },
 
   // ISSUES
-  getIssues: (): Issue[] => getStorageItem<Issue>(KEYS.ISSUES, SEED_ISSUES),
-  getIssueById: (id: string): Issue | undefined => api.getIssues().find(i => i.id === id),
-  saveIssue: (issue: Omit<Issue, "id"> & { id?: string }): Issue => {
-    const issues = api.getIssues();
-    let saved: Issue;
-    if (issue.id) {
-      issues.forEach((i, idx) => {
-        if (i.id === issue.id) {
-          issues[idx] = { ...i, ...issue } as Issue;
-        }
-      });
-      saved = issues.find(i => i.id === issue.id)!;
-    } else {
-      saved = {
-        ...issue,
-        id: `iss-${Date.now()}`,
-      };
-      issues.push(saved);
-    }
-    setStorageItem(KEYS.ISSUES, issues);
-    return saved;
+  getIssues: async (): Promise<Issue[]> => {
+    const res = await client.get("/issues");
+    const list = res.data?.data?.issues || [];
+    return Array.isArray(list) ? list.map(mapIssueFromBackend) : [];
   },
-  deleteIssue: (id: string): boolean => {
-    const issues = api.getIssues();
-    const filtered = issues.filter(i => i.id !== id);
-    if (filtered.length === issues.length) return false;
-    setStorageItem(KEYS.ISSUES, filtered);
+  getIssueById: async (id: string): Promise<Issue | undefined> => {
+    const res = await client.get(`/issues/${id}`);
+    const issue = res.data?.data?.issue;
+    return issue ? mapIssueFromBackend(issue) : undefined;
+  },
+  saveIssue: async (issue: Omit<Issue, "id"> & { id?: string }): Promise<Issue> => {
+    const payload = {
+      issueTitle: issue.issue_title,
+      problem: issue.problem,
+      solution: issue.solution,
+    };
+    if (issue.id) {
+      const res = await client.put(`/issues/${issue.id}`, payload);
+      return mapIssueFromBackend(res.data?.data?.issue);
+    } else {
+      const res = await client.post("/issues", payload);
+      return mapIssueFromBackend(res.data?.data?.issue);
+    }
+  },
+  deleteIssue: async (id: string): Promise<boolean> => {
+    await client.delete(`/issues/${id}`);
     return true;
   },
 
   // BLOG POSTS
-  getBlogPosts: (): BlogPost[] => getStorageItem<BlogPost>(KEYS.BLOG_POSTS, SEED_BLOG_POSTS),
-  getBlogPostById: (id: string): BlogPost | undefined => api.getBlogPosts().find(b => b.id === id),
-  saveBlogPost: (blogPost: Omit<BlogPost, "id"> & { id?: string }): BlogPost => {
-    const posts = api.getBlogPosts();
-    let saved: BlogPost;
-    if (blogPost.id) {
-      posts.forEach((b, idx) => {
-        if (b.id === blogPost.id) {
-          posts[idx] = { ...b, ...blogPost } as BlogPost;
-        }
-      });
-      saved = posts.find(b => b.id === blogPost.id)!;
-    } else {
-      saved = {
-        ...blogPost,
-        id: `blog-${Date.now()}`,
-      };
-      posts.push(saved);
-    }
-    setStorageItem(KEYS.BLOG_POSTS, posts);
-    return saved;
+  getBlogPosts: async (): Promise<BlogPost[]> => {
+    const res = await client.get("/blogs");
+    const blogs = res.data?.data?.blogs || [];
+    return Array.isArray(blogs) ? blogs.map(mapBlogPostFromBackend) : [];
   },
-  deleteBlogPost: (id: string): boolean => {
-    const posts = api.getBlogPosts();
-    const filtered = posts.filter(b => b.id !== id);
-    if (filtered.length === posts.length) return false;
-    setStorageItem(KEYS.BLOG_POSTS, filtered);
+  getBlogPostById: async (id: string): Promise<BlogPost | undefined> => {
+    const res = await client.get(`/blogs/${id}`);
+    const blog = res.data?.data?.blog;
+    return blog ? mapBlogPostFromBackend(blog) : undefined;
+  },
+  saveBlogPost: async (blogPost: Omit<BlogPost, "id"> & { id?: string }): Promise<BlogPost> => {
+    const payload = {
+      title: blogPost.title,
+      content: blogPost.content,
+      category: blogPost.category,
+      tags: blogPost.tags,
+      author: blogPost.author,
+      publishDate: blogPost.publish_date ? new Date(blogPost.publish_date).toISOString() : new Date().toISOString(),
+    };
+    if (blogPost.id) {
+      const res = await client.put(`/blogs/${blogPost.id}`, payload);
+      return mapBlogPostFromBackend(res.data?.data?.blog);
+    } else {
+      const res = await client.post("/blogs", payload);
+      return mapBlogPostFromBackend(res.data?.data?.blog);
+    }
+  },
+  deleteBlogPost: async (id: string): Promise<boolean> => {
+    await client.delete(`/blogs/${id}`);
     return true;
   },
 
   // SEO METADATA
-  getSeoMetadata: (): SeoMetadata[] => getStorageItem<SeoMetadata>(KEYS.SEO_METADATA, SEED_SEO),
-  getSeoMetadataById: (id: string): SeoMetadata | undefined => api.getSeoMetadata().find(s => s.id === id),
-  saveSeoMetadata: (seo: Omit<SeoMetadata, "id"> & { id?: string }): SeoMetadata => {
-    const seos = api.getSeoMetadata();
-    let saved: SeoMetadata;
+  getSeoMetadata: async (): Promise<SeoMetadata[]> => {
+    const res = await client.get("/seo");
+    const list = res.data?.data?.seoList || res.data?.data?.seo || [];
+    return Array.isArray(list) ? list.map(mapSeoFromBackend) : [];
+  },
+  getSeoMetadataById: async (id: string): Promise<SeoMetadata | undefined> => {
+    const res = await client.get(`/seo/${id}`);
+    const seo = res.data?.data?.seo;
+    return seo ? mapSeoFromBackend(seo) : undefined;
+  },
+  saveSeoMetadata: async (seo: Omit<SeoMetadata, "id"> & { id?: string }): Promise<SeoMetadata> => {
+    const isHome = seo.page_type === "home";
+    const payload = {
+      pageType: isHome ? "STATIC" : seo.page_type.toUpperCase().replace("-", "_"),
+      pageId: isHome ? null : (seo.page_id || null),
+      metaTitle: seo.meta_title,
+      metaDescription: seo.meta_description,
+      canonicalUrl: seo.canonical_url || null,
+    };
     if (seo.id) {
-      seos.forEach((s, idx) => {
-        if (s.id === seo.id) {
-          seos[idx] = { ...s, ...seo } as SeoMetadata;
-        }
-      });
-      saved = seos.find(s => s.id === seo.id)!;
+      const res = await client.put(`/seo/${seo.id}`, payload);
+      return mapSeoFromBackend(res.data?.data?.seo);
     } else {
-      saved = {
-        ...seo,
-        id: `seo-${Date.now()}`,
-      };
-      seos.push(saved);
+      const res = await client.post("/seo", payload);
+      return mapSeoFromBackend(res.data?.data?.seo);
     }
-    setStorageItem(KEYS.SEO_METADATA, seos);
-    return saved;
   },
-  deleteSeoMetadata: (id: string): boolean => {
-    const seos = api.getSeoMetadata();
-    const filtered = seos.filter(s => s.id !== id);
-    if (filtered.length === seos.length) return false;
-    setStorageItem(KEYS.SEO_METADATA, filtered);
+  deleteSeoMetadata: async (id: string): Promise<boolean> => {
+    await client.delete(`/seo/${id}`);
     return true;
   },
 
-  // DYNAMIC PAGES (MAPPED TO JIVANJOR-SERVER PAGE SERVICE)
-  getPages: (): Page[] => getStorageItem<Page>(KEYS.PAGES, SEED_PAGES),
-  getPageById: (id: string): Page | undefined => api.getPages().find(p => p.id === id),
-  savePage: (page: Omit<Page, "id"> & { id?: string }): Page => {
-    const pages = api.getPages();
-    let saved: Page;
+  // DYNAMIC PAGES
+  getPages: async (): Promise<Page[]> => {
+    const res = await client.get("/pages");
+    const pages = res.data?.data?.pages || [];
+    return Array.isArray(pages) ? pages : [];
+  },
+  getPageById: async (id: string): Promise<Page | undefined> => {
+    const res = await client.get(`/pages/${id}`);
+    return res.data?.data?.page;
+  },
+  savePage: async (page: Omit<Page, "id"> & { id?: string }): Promise<Page> => {
     if (page.id) {
-      pages.forEach((p, idx) => {
-        if (p.id === page.id) {
-          pages[idx] = { ...p, ...page } as Page;
-        }
-      });
-      saved = pages.find(p => p.id === page.id)!;
-    } else {
-      saved = {
-        ...page,
-        id: `page-${Date.now()}`,
+      const payload = {
+        title: page.title,
+        description: page.description || "",
+        activeTemplateId: page.activeTemplateId,
       };
-      pages.push(saved);
+      const res = await client.put(`/pages/${page.id}`, payload);
+      return res.data?.data?.page;
+    } else {
+      const payload = {
+        title: page.title,
+        description: page.description || "",
+      };
+      const res = await client.post("/pages", payload);
+      return res.data?.data?.page;
     }
-    setStorageItem(KEYS.PAGES, pages);
-    return saved;
   },
-  deletePage: (id: string): boolean => {
-    const pages = api.getPages();
-    const filtered = pages.filter(p => p.id !== id);
-    if (filtered.length === pages.length) return false;
-    setStorageItem(KEYS.PAGES, filtered);
-    
-    // Cascading delete templates of this page matching server
-    const templates = api.getTemplates();
-    const remainingTemplates = templates.filter(t => t.pageId !== id);
-    setStorageItem(KEYS.TEMPLATES, remainingTemplates);
-    
+  deletePage: async (id: string): Promise<boolean> => {
+    await client.delete(`/pages/${id}`);
     return true;
   },
 
-  // PAGE TEMPLATES (MAPPED TO JIVANJOR-SERVER TEMPLATE SERVICE)
-  getTemplates: (): PageTemplate[] => getStorageItem<PageTemplate>(KEYS.TEMPLATES, SEED_TEMPLATES),
-  getTemplateById: (id: string): PageTemplate | undefined => api.getTemplates().find(t => t.id === id),
-  saveTemplate: (template: Omit<PageTemplate, "id"> & { id?: string }): PageTemplate => {
-    const templates = api.getTemplates();
-    let saved: PageTemplate;
+  // PAGE TEMPLATES
+  getTemplates: async (): Promise<PageTemplate[]> => {
+    const res = await client.get("/templates");
+    const templates = res.data?.data?.templates || res.data?.templates || [];
+    return Array.isArray(templates) ? templates.map(mapTemplateFromBackend) : [];
+  },
+  getTemplateById: async (id: string): Promise<PageTemplate | undefined> => {
+    const res = await client.get(`/templates/${id}`);
+    const temp = res.data?.data?.template || res.data?.data;
+    return temp ? mapTemplateFromBackend(temp) : undefined;
+  },
+  saveTemplate: async (template: Omit<PageTemplate, "id" | "isActive"> & { id?: string }): Promise<PageTemplate> => {
+    const payload = {
+      name: template.name,
+      sections: template.sections,
+    };
     if (template.id) {
-      templates.forEach((t, idx) => {
-        if (t.id === template.id) {
-          templates[idx] = { ...t, ...template } as PageTemplate;
-        }
-      });
-      saved = templates.find(t => t.id === template.id)!;
+      const res = await client.put(`/templates/${template.id}`, payload);
+      return mapTemplateFromBackend(res.data?.data?.template || res.data?.data);
     } else {
-      saved = {
-        ...template,
-        id: `temp-${Date.now()}`,
-      };
-      templates.push(saved);
+      const res = await client.post("/templates", payload);
+      return mapTemplateFromBackend(res.data?.data?.template || res.data?.data);
     }
-    setStorageItem(KEYS.TEMPLATES, templates);
-    return saved;
   },
-  deleteTemplate: (id: string): boolean => {
-    const templates = api.getTemplates();
-    const filtered = templates.filter(t => t.id !== id);
-    if (filtered.length === templates.length) return false;
-    setStorageItem(KEYS.TEMPLATES, filtered);
+  deleteTemplate: async (id: string): Promise<boolean> => {
+    await client.delete(`/templates/${id}`);
     return true;
   },
-  activateTemplate: (id: string): PageTemplate | undefined => {
-    const templates = api.getTemplates();
-    const target = templates.find(t => t.id === id);
-    if (!target) return undefined;
-
-    // Set all templates of same page to false, and this one to true (1:1 matching transaction in server)
-    templates.forEach((t, idx) => {
-      if (t.pageId === target.pageId) {
-        templates[idx].isActive = t.id === id;
-      }
-    });
-
-    setStorageItem(KEYS.TEMPLATES, templates);
-    return templates.find(t => t.id === id);
+  activateTemplate: async (id: string): Promise<PageTemplate | undefined> => {
+    const res = await client.post(`/templates/${id}/activate`);
+    const temp = res.data?.data?.template || res.data?.data;
+    return temp ? mapTemplateFromBackend(temp) : undefined;
   }
 };

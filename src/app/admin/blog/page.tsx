@@ -44,12 +44,22 @@ export default function BlogPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [composerPreview, setComposerPreview] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setBlogs(api.getBlogPosts());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getBlogPosts();
+      setBlogs(data);
+    } catch (err) {
+      console.error("Failed to load blog posts", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTitleChange = (title: string) => {
@@ -92,32 +102,40 @@ export default function BlogPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const tags = formData.tagsInput
       .split(",")
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
-    api.saveBlogPost({
-      id: editingId || undefined,
-      title: formData.title,
-      slug: formData.slug,
-      content: formData.content,
-      category: formData.category,
-      tags,
-      author: formData.author,
-      publish_date: formData.publish_date,
-      image: formData.image || undefined,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveBlogPost({
+        id: editingId || undefined,
+        title: formData.title,
+        slug: formData.slug,
+        content: formData.content,
+        category: formData.category,
+        tags,
+        author: formData.author,
+        publish_date: formData.publish_date,
+        image: formData.image || undefined,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save blog post", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteBlogPost(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteBlogPost(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete blog post", err);
+    }
   };
 
   // Helper to inject text templates in content
@@ -189,7 +207,14 @@ export default function BlogPage() {
 
         {/* Blog Post List */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {currentBlogs.length > 0 ? (
+          {loading ? (
+            <div className="md:col-span-2 p-12 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 rounded-3xl">
+              <div className="flex flex-col items-center gap-3 justify-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                <span>Retrieving publications from database...</span>
+              </div>
+            </div>
+          ) : currentBlogs.length > 0 ? (
             currentBlogs.map((blog) => (
               <div
                 key={blog.id}

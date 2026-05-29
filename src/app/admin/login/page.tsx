@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { Lock, Mail, AlertTriangle, ArrowRight } from "lucide-react";
+import axios from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,28 +13,39 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // Simulated short network delay for absolute realism and feel
-    setTimeout(() => {
-      if (email === "admin@jivanjor.com" && password === "admin123") {
-        signIn(email);
+    try {
+      const res = await axios.post("http://localhost:8000/api/auth/login", {
+        email,
+        password,
+      });
+      const data = res.data?.data;
+      if (data?.token) {
+        signIn(email, data.token);
         router.push("/admin");
       } else {
-        setError("Invalid email address or password. Please use the pre-filled credentials.");
+        setError("Could not retrieve authentication token from backend.");
         setLoading(false);
       }
-    }, 800);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to authenticate with backend server. Make sure the database is running."
+      );
+      setLoading(false);
+    }
   };
 
   const fillCredentials = () => {
     setEmail("admin@jivanjor.com");
-    setPassword("admin123");
+    setPassword("Admin123!");
     setError("");
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-12 dark:bg-zinc-950 sm:px-6 lg:px-8 transition-colors duration-300">
