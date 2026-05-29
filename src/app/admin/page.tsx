@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     products: 0,
     categories: 0,
@@ -33,18 +34,50 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    setStats({
-      products: api.getProducts().length,
-      categories: api.getCategories().length,
-      materials: api.getMaterials().length,
-      blogs: api.getBlogPosts().length,
-      useCases: api.getUseCases().length,
-      issues: api.getIssues().length,
-      seo: api.getSeoMetadata().length,
-      pages: api.getPages().length,
-      templates: api.getTemplates().length,
-    });
+    async function loadStats() {
+      try {
+        const [
+          products,
+          categories,
+          materials,
+          blogs,
+          useCases,
+          issues,
+          seo,
+          pages,
+          templates,
+        ] = await Promise.all([
+          api.getProducts(),
+          api.getCategories(),
+          api.getMaterials(),
+          api.getBlogPosts(),
+          api.getUseCases(),
+          api.getIssues(),
+          api.getSeoMetadata(),
+          api.getPages(),
+          api.getTemplates(),
+        ]);
+
+        setStats({
+          products: products.length,
+          categories: categories.length,
+          materials: materials.length,
+          blogs: blogs.length,
+          useCases: useCases.length,
+          issues: issues.length,
+          seo: seo.length,
+          pages: pages.length,
+          templates: templates.length,
+        });
+      } catch (err) {
+        console.error("Failed to load dashboard metrics", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStats();
   }, []);
+
 
   const metricCards = [
     {
@@ -143,16 +176,20 @@ export default function DashboardPage() {
                 href={card.href}
                 className="group flex items-center justify-between p-6 bg-background border border-border rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-md cursor-pointer duration-300"
               >
-                <div className="space-y-1">
+                <div className="space-y-1 w-full">
                   <span className="text-xs font-bold text-foreground/45 uppercase tracking-wider">
                     {card.name}
                   </span>
-                  <p className="text-3xl font-black text-foreground tracking-tight">
-                    {card.value}
-                  </p>
+                  {loading ? (
+                    <div className="h-8 w-12 bg-foreground/10 rounded-lg animate-pulse mt-1" />
+                  ) : (
+                    <p className="text-3xl font-black text-foreground tracking-tight">
+                      {card.value}
+                    </p>
+                  )}
                 </div>
                 <div
-                  className={`h-12 w-12 rounded-xl bg-linear-to-tr ${card.color} text-white flex items-center justify-center shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}
+                  className={`h-12 w-14 p-2 rounded-xl bg-linear-to-tr ${card.color} text-white flex items-center justify-center shadow-lg ${card.shadow} group-hover:scale-110 transition-transform duration-300`}
                 >
                   <Icon className="h-6 w-6" />
                 </div>

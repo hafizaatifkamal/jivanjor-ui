@@ -21,12 +21,22 @@ export default function MaterialsPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setMaterials(api.getMaterials());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getMaterials();
+      setMaterials(data);
+    } catch (err) {
+      console.error("Failed to fetch materials", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOpenAdd = () => {
@@ -47,20 +57,28 @@ export default function MaterialsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveMaterial({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveMaterial({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save material", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteMaterial(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteMaterial(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete material", err);
+    }
   };
 
   // Filter Materials
@@ -123,7 +141,16 @@ export default function MaterialsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentMaterials.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={3} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving materials from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentMaterials.length > 0 ? (
                   currentMaterials.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50/30 dark:hover:bg-zinc-800/20 transition-colors">
                       <td className="p-5">

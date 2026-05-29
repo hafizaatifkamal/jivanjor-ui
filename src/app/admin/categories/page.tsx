@@ -23,12 +23,22 @@ export default function CategoriesPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setCategories(api.getCategories());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const list = await api.getCategories();
+      setCategories(list);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNameChange = (name: string) => {
@@ -61,20 +71,28 @@ export default function CategoriesPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveCategory({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveCategory({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save category", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteCategory(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteCategory(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete category", err);
+    }
   };
 
   // Filter Categories
@@ -138,7 +156,16 @@ export default function CategoriesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentCategories.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving classifications from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentCategories.length > 0 ? (
                   currentCategories.map((c) => {
                     const parent = categories.find((cat) => cat.id === c.parent_category);
                     return (

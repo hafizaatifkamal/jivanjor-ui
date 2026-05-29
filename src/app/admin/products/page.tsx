@@ -42,14 +42,42 @@ export default function ProductsPage() {
   // Delete state
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setProducts(api.getProducts());
-    setCategories(api.getCategories());
-    setMaterials(api.getMaterials());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [prodsList, catsList, matsList] = await Promise.all([
+        api.getProducts(),
+        api.getCategories(),
+        api.getMaterials()
+      ]);
+      setProducts(prodsList);
+      setCategories(catsList);
+      setMaterials(matsList);
+
+      // Pre-fill categories/materials default options in form
+      if (catsList.length > 0 && !formData.category_id) {
+        setFormData(prev => ({
+          ...prev,
+          category_id: prev.category_id || catsList[0].id
+        }));
+      }
+      if (matsList.length > 0 && !formData.material_id) {
+        setFormData(prev => ({
+          ...prev,
+          material_id: prev.material_id || matsList[0].id
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to load products/metadata", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNameChange = (name: string) => {
@@ -88,20 +116,28 @@ export default function ProductsPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveProduct({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveProduct({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save product", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteProduct(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteProduct(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete product", err);
+    }
   };
 
   // Filter products
@@ -191,7 +227,16 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentProducts.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving products from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentProducts.length > 0 ? (
                   currentProducts.map((product) => {
                     const category = categories.find((c) => c.id === product.category_id);
                     const material = materials.find((m) => m.id === product.material_id);

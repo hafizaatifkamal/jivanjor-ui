@@ -22,12 +22,22 @@ export default function UseCasesPage() {
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    setUseCases(api.getUseCases());
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getUseCases();
+      setUseCases(data);
+    } catch (err) {
+      console.error("Failed to fetch use cases", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTitleChange = (title: string) => {
@@ -58,20 +68,28 @@ export default function UseCasesPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    api.saveUseCase({
-      id: editingId || undefined,
-      ...formData,
-    });
-    setIsModalOpen(false);
-    loadData();
+    try {
+      await api.saveUseCase({
+        id: editingId || undefined,
+        ...formData,
+      });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to save use case", err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    api.deleteUseCase(id);
-    setDeleteConfirmId(null);
-    loadData();
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteUseCase(id);
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err) {
+      console.error("Failed to delete use case", err);
+    }
   };
 
   // Filter Use Cases
@@ -134,7 +152,16 @@ export default function UseCasesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {currentUseCases.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={3} className="p-10 text-center text-sm font-semibold text-gray-400 dark:text-zinc-500 bg-surface/5">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                        <span>Retrieving use cases from database...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : currentUseCases.length > 0 ? (
                   currentUseCases.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50/30 dark:hover:bg-zinc-800/20 transition-colors">
                       <td className="p-5">

@@ -35,15 +35,15 @@ interface SidebarItem {
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { name: "Overview", href: "/admin", icon: LayoutDashboard },
-  { name: "Product Management", href: "/admin/products", icon: Package },
-  { name: "Category Management", href: "/admin/categories", icon: FolderTree },
-  { name: "Material Management", href: "/admin/materials", icon: Hammer },
-  { name: "Blog Management", href: "/admin/blog", icon: BookOpen },
-  { name: "Use Case Management", href: "/admin/use-cases", icon: Lightbulb },
-  { name: "Issue Management", href: "/admin/issues", icon: HelpCircle },
-  { name: "SEO Metadata Management", href: "/admin/seo", icon: Search },
-  { name: "Dynamic Page Management", href: "/admin/pages", icon: FileText },
-  { name: "Page Template Management", href: "/admin/templates", icon: Layers },
+  { name: "Product", href: "/admin/products", icon: Package },
+  { name: "Category", href: "/admin/categories", icon: FolderTree },
+  { name: "Material", href: "/admin/materials", icon: Hammer },
+  { name: "Blog", href: "/admin/blog", icon: BookOpen },
+  { name: "Use Case", href: "/admin/use-cases", icon: Lightbulb },
+  { name: "Issue", href: "/admin/issues", icon: HelpCircle },
+  { name: "SEO Metadata", href: "/admin/seo", icon: Search },
+  { name: "Dynamic Page", href: "/admin/pages", icon: FileText },
+  { name: "Page Template", href: "/admin/templates", icon: Layers },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
