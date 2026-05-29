@@ -1251,6 +1251,13 @@ export default function TemplatesPage() {
                               placeholder="Guide Name"
                               className="w-full px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-semibold"
                             />
+                            <input
+                              type="text"
+                              value={item.image || ""}
+                              onChange={(e) => updateItemField("knowledgeBase", idx, "image", e.target.value)}
+                              placeholder="/images/hero.png"
+                              className="w-full px-3 py-1.5 bg-background border border-border rounded-xl text-xs font-semibold"
+                            />
                             <textarea
                               rows={2}
                               value={item.summary || ""}
