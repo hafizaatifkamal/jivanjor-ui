@@ -97,6 +97,7 @@ export interface PageTemplate {
   slug: string;
   isActive: boolean;
   sections: PageTemplateSection[];
+  rawSections?: any;
 }
 
 // Set up Axios Client
@@ -240,6 +241,7 @@ function mapTemplateFromBackend(temp: any): PageTemplate {
     slug: temp.slug,
     isActive: !!temp.isActive,
     sections: sectionsArray,
+    rawSections: temp.sections,
   };
 }
 
@@ -525,5 +527,15 @@ export const api = {
     const res = await client.post(`/templates/${id}/activate`);
     const temp = res.data?.data?.template || res.data?.data;
     return temp ? mapTemplateFromBackend(temp) : undefined;
+  },
+  getActiveTemplateForPage: async (pageSlug: string): Promise<PageTemplate | undefined> => {
+    try {
+      const res = await client.get(`/templates/active/page/${pageSlug}`);
+      const temp = res.data?.data?.template || res.data?.data;
+      return temp ? mapTemplateFromBackend(temp) : undefined;
+    } catch (err) {
+      console.error(`Failed to get active template for page ${pageSlug}`, err);
+      return undefined;
+    }
   }
 };

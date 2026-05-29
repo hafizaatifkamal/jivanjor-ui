@@ -9,73 +9,128 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const productCards = [
-  {
-    title: "Champion Super",
-    description:
-      "Provides a superior bond and strength, while being non-hazardous.",
-    color: "bg-[#0083CB]",
-    badge: "Super Premium",
-    image: "/images/Champion Super.png",
-  },
-  {
-    title: "Aquabond",
-    description:
-      "Heatproof and waterproof adhesive made with Cross Linking Polymer.",
-    color: "bg-[#077937]",
-    badge: "Waterproof Grade",
-    image: "/images/Aquabond.png",
-  },
-  {
-    title: "Foambond",
-    description:
-      "Great for upholstery, it connects foam, resin, leather, fabrics and metal.",
-    color: "bg-[#F57F26]",
-    badge: "Speciality",
-    image: "/images/Foambond.png",
-  },
-  {
-    title: "Watershield",
-    description:
-      "Provides excellent water-resistance. Its superior flow makes it smooth and easy to apply.",
-    color: "bg-[#007B8A]",
-    badge: "Eco Friendly",
-    image: "/images/Watershield.png",
-  },
-];
+interface CarouselItem {
+  id?: string;
+  title?: string;
+  name?: string;
+  description?: string;
+  color?: string;
+  badge?: string;
+  tag?: string;
+  image?: string;
+  imageUrl?: string;
+  cta?: {
+    text?: string;
+    actionPath?: string;
+  };
+}
 
-export default function ProductCarousel() {
+interface ProductCarouselProps {
+  items?: CarouselItem[];
+}
+
+function mapProductImage(name: string, fallbackUrl?: string) {
+  const n = name.toLowerCase();
+  if (n.includes("champion") || n.includes("super")) return "/images/Champion Super.png";
+  if (n.includes("aquabond") || n.includes("aqua")) return "/images/Aquabond.png";
+  if (n.includes("foambond") || n.includes("foam")) return "/images/Foambond.png";
+  if (n.includes("watershield") || n.includes("water") || n.includes("shield")) return "/images/Watershield.png";
+  return fallbackUrl || "/images/Champion Super.png";
+}
+
+export default function ProductCarousel({ items }: ProductCarouselProps) {
+  const colors = ["bg-[#0083CB]", "bg-[#077937]", "bg-[#F57F26]", "bg-[#007B8A]"];
+
+  const defaultProductCards = [
+    {
+      title: "Champion Super",
+      description:
+        "Provides a superior bond and strength, while being non-hazardous.",
+      color: "bg-[#0083CB]",
+      badge: "Super Premium",
+      image: "/images/Champion Super.png",
+      ctaText: "",
+      ctaLink: "",
+    },
+    {
+      title: "Aquabond",
+      description:
+        "Heatproof and waterproof adhesive made with Cross Linking Polymer.",
+      color: "bg-[#077937]",
+      badge: "Waterproof Grade",
+      image: "/images/Aquabond.png",
+      ctaText: "",
+      ctaLink: "",
+    },
+    {
+      title: "Foambond",
+      description:
+        "Great for upholstery, it connects foam, resin, leather, fabrics and metal.",
+      color: "bg-[#F57F26]",
+      badge: "Speciality",
+      image: "/images/Foambond.png",
+      ctaText: "",
+      ctaLink: "",
+    },
+    {
+      title: "Watershield",
+      description:
+        "Provides excellent water-resistance. Its superior flow makes it smooth and easy to apply.",
+      color: "bg-[#007B8A]",
+      badge: "Eco Friendly",
+      image: "/images/Watershield.png",
+      ctaText: "",
+      ctaLink: "",
+    },
+  ];
+
+  const cards = items && items.length > 0
+    ? items.map((item, idx) => ({
+      title: item.title || item.name || "",
+      description: item.description || "",
+      color: item.color || colors[idx % colors.length],
+      badge: item.tag || item.badge || "",
+      image: mapProductImage(item.title || item.name || "", item.imageUrl || item.image),
+      ctaText: item.cta?.text || "",
+      ctaLink: item.cta?.actionPath || "",
+    }))
+    : defaultProductCards;
+
   return (
     <section className="w-full">
       <Swiper
         modules={[Navigation]}
         watchOverflow={false}
         loop={false}
-        spaceBetween={30}
-        slidesPerView={1.5}
+        spaceBetween={16}
+        slidesPerView={1.2}
         navigation={{
           prevEl: ".product-prev",
           nextEl: ".product-next",
           disabledClass: "swiper-button-disabled",
         }}
         breakpoints={{
-          640: {
-            slidesPerView: 1,
+          480: {
+            slidesPerView: 1.5,
+            spaceBetween: 20,
           },
           768: {
             slidesPerView: 2,
+            spaceBetween: 24,
           },
           1024: {
             slidesPerView: 3,
+            spaceBetween: 30,
           },
           1280: {
             slidesPerView: 4,
+            spaceBetween: 30,
           },
         }}
         className="overflow-visible!"
       >
-        {productCards.map((card) => (
-          <SwiperSlide key={card.title} className="overflow-visible! xl w-68!">
+        {cards.map((card, idx) => (
+          <SwiperSlide key={`${card.title}-${idx}`} className="overflow-visible! px-1">
             <div className="relative pt-24">
               {/* Floating image */}
               <Image
@@ -87,7 +142,7 @@ export default function ProductCarousel() {
               />
               {/* Card */}
               <div
-                className={`${card.color} rounded-[28px] p-6 flex flex-col justify-end items-center text-white shadow-xl min-h-90 min-w-64`}
+                className={`${card.color} rounded-[28px] p-6 flex flex-col justify-end items-center text-white shadow-xl min-h-90 w-full`}
               >
                 <h3 className="text-2xl font-semibold text-center">
                   {card.title}

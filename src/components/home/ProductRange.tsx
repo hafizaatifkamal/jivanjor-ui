@@ -3,7 +3,19 @@ import Image from "next/image";
 import { useState } from "react";
 import ProductCarousel from "./ProductCarousel";
 
-export default function ProductRange() {
+interface ProductRangeProps {
+  data?: {
+    title?: string;
+    subtitle?: string;
+    items?: any[];
+  };
+}
+
+export default function ProductRange({ data }: ProductRangeProps) {
+  const title = data?.title || "A Complete Adhesive Range for Modern Woodworking";
+  const subtitle = data?.subtitle || "";
+  const items = data?.items || [];
+
   const tabs = [
     "Super Premium",
     "Speciality",
@@ -35,8 +47,13 @@ export default function ProductRange() {
         />
         <div className="max-w-5xl my-6">
           <h2 className="font-amethysta font-normal text-5xl lg:text-6xl xl:text-7xl">
-            A Complete Adhesive Range for Modern Woodworking
+            {title}
           </h2>
+          {subtitle && (
+            <p className="mt-4 text-xl text-foreground/85 max-w-3xl mx-auto font-google-sans">
+              {subtitle}
+            </p>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-4 my-4">
             {tabs.map((tab) => (
               <button
@@ -49,7 +66,7 @@ export default function ProductRange() {
             ))}
           </div>
         </div>
-        <ProductCarousel />
+        <ProductCarousel items={items} />
       </div>
     </section>
   );
