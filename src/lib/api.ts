@@ -101,7 +101,7 @@ export interface PageTemplate {
 }
 
 // Set up Axios Client
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = "https://jivanjor-server.up.railway.app/api";
 
 const client = axios.create({
   baseURL: API_BASE,
