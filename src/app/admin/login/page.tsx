@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/login", {
+      const res = await axios.post("https://jivanjor-server.up.railway.app/api/auth/login", {
         email,
         password,
       });
@@ -34,7 +34,7 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          "Failed to authenticate with backend server. Make sure the database is running."
+        "Failed to authenticate with backend server. Make sure the database is running."
       );
       setLoading(false);
     }
